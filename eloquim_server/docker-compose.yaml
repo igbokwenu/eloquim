@@ -1,0 +1,44 @@
+services:
+  # Development services
+  postgres:
+    image: pgvector/pgvector:pg16
+    ports:
+      - "8090:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: eloquim
+      POSTGRES_PASSWORD: "zlsEBhJ0BJVfiDXgeoU4nEu2gVOgz4dF"
+    volumes:
+      - eloquim_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:6.2.6
+    ports:
+      - "8091:6379"
+    command: redis-server --requirepass "ZHSrPo7sPAwA9ndR5NaQXlscv8Fpw4l1"
+    environment:
+      - REDIS_REPLICATION_MODE=master
+
+  # Test services
+  postgres_test:
+    image: pgvector/pgvector:pg16
+    ports:
+      - "9090:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: eloquim_test
+      POSTGRES_PASSWORD: "uZbz5vz2VG0ckA54tDt1t5PMkvL5qMIg"
+    volumes:
+      - eloquim_test_data:/var/lib/postgresql/data
+
+  redis_test:
+    image: redis:6.2.6
+    ports:
+      - "9091:6379"
+    command: redis-server --requirepass "_DWDBmyL_4HJ2RfNDsdHLnrHLc5uw2_K"
+    environment:
+      - REDIS_REPLICATION_MODE=master
+
+volumes:
+  eloquim_data:
+  eloquim_test_data:
