@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "eloquim_flutter"
+		},
+		{
+			"path": "eloquim_client"
+		},
+		{
+			"path": "eloquim_server"
+		}
+	]
+}
