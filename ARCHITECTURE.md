@@ -69,7 +69,7 @@ Eloquim transforms emoji into expressive, personality-driven communication throu
 │  ┌────────────── PRESENTATION LAYER ──────────────┐         │
 │  │  • Onboarding Flow    • Chat Interface         │         │
 │  │  • Persona Setup      • Profile Management     │         │
-│  │  • Tutorial (Lucy)    • Settings               │         │
+│  │  • Tutorial (Adanna)    • Settings               │         │
 │  └────────────────────────────────────────────────┘         │
 │                         ▼                                     │
 │  ┌────────────── STATE MANAGEMENT ─────────────────┐        │
@@ -137,7 +137,7 @@ Eloquim transforms emoji into expressive, personality-driven communication throu
 │  │  ├─ Input: user_profiles + interaction_patterns │        │
 │  │  └─ Output: compatibility_scores + reasons      │        │
 │  │                                                  │        │
-│  │  TutorialAgent (Lucy)                            │        │
+│  │  TutorialAgent (Adanna)                            │        │
 │  │  ├─ Input: user_progress + interaction_context  │        │
 │  │  └─ Output: guided_prompts + examples            │        │
 │  └──────────────────────────────────────────────────┘        │
@@ -898,10 +898,10 @@ class EmojiCombo {
   - Welcome screen with animated emoji introduction
   - Anonymous sign-in (primary) + Google OAuth (optional)
   - 5-question personality quiz to determine persona
-  - Tutorial with "Lucy" AI agent (interactive chat demo)
+  - Tutorial with "Adanna" AI agent (interactive chat demo)
 - **Flow**:
   ```
-  Welcome → Auth → Quiz (5Q) → Persona Assignment → Lucy Tutorial (3 examples) → Main Chat
+  Welcome → Auth → Quiz (5Q) → Persona Assignment → Adanna Tutorial (3 examples) → Main Chat
   ```
 
 #### 2. **Core Messaging** 💬
@@ -1038,7 +1038,7 @@ class EmojiCombo {
 └─────────────────┘    Shows emoji signature
      ↓
 ┌─────────────────┐
-│ Lucy Tutorial   │ → 3 interactive examples:
+│ Adanna Tutorial   │ → 3 interactive examples:
 └─────────────────┘    1. "Try saying hello with 👋😊"
      │                 2. "Now add tone: switch to Flirty"
      │                 3. "Long-press to see translation"
@@ -1185,7 +1185,7 @@ class EmojiCombo {
 - [ ] Integrate genui_firebase_ai
 - [ ] Implement emoji → text translation
 - [ ] Build recommendation engine
-- [ ] Create Lucy tutorial agent
+- [ ] Create Adanna tutorial agent
 - [ ] Wire up AI to chat UI
 - [ ] Add confidence scores
 
