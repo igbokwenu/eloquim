@@ -1,0 +1,10 @@
+#eloquim_server/lib/src/protocol/recommendation_response.spy.yaml
+class: RecommendationResponse
+fields:
+  singles: List<String>
+  combos: List<EmojiCombo>
+
+class: EmojiCombo
+fields:
+  emojis: List<String>
+  meaning: String

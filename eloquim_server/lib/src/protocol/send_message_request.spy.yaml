@@ -1,0 +1,10 @@
+#eloquim_server/lib/src/protocol/send_message_request.spy.yaml
+class: SendMessageRequest
+fields:
+  conversationId: int
+  rawIntent: String?
+  emojiSequence: List<String>
+  tone: String
+  personaId: String
+  mediaGifUrl: String?
+  replyToMsgId: int?

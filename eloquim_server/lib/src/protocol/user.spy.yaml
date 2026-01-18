@@ -1,0 +1,20 @@
+#eloquim_server/lib/src/protocol/user.spy.yaml
+class: User
+table: users
+fields:
+  id: int, primary, autoIncrement
+  username: String
+  email: String?, index
+  gender: String?
+  age: int?
+  country: String?
+  personaId: int?, relation(parent=Persona)
+  emojiSignature: String, default="✨🎵💫"
+  hasDoneTutorial: bool, default=false
+  createdAt: DateTime, default=now
+  lastSeen: DateTime, default=now
+  isAnonymous: bool, default=true
+indexes:
+  users_last_seen_idx:
+    fields: lastSeen
+    type: btree

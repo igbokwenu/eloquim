@@ -1,0 +1,15 @@
+#eloquim_server/lib/src/protocol/emoji_mapping.spy.yaml
+class: EmojiMapping
+table: emoji_mappings
+fields:
+  id: int, primary, autoIncrement
+  personaId: int, relation(parent=Persona)
+  emojiSequence: String
+  canonicalText: String
+  contextTags: List<String>
+  usageCount: int, default=0
+  createdAt: DateTime, default=now
+indexes:
+  emoji_mappings_persona_idx:
+    fields: personaId, emojiSequence
+    type: btree

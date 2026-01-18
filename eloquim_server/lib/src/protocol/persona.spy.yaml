@@ -1,0 +1,17 @@
+#eloquim_server/lib/src/protocol/persona.spy.yaml
+class: Persona
+table: personas
+fields:
+  id: int, primary, autoIncrement
+  name: String
+  creatorId: int?, relation(parent=User)
+  isOfficial: bool, default=false
+  description: String
+  traitsJson: String
+  communicationStyle: String
+  packVersion: String, default="1.0"
+  createdAt: DateTime, default=now
+indexes:
+  personas_official_idx:
+    fields: isOfficial
+    type: btree

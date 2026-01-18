@@ -1,0 +1,19 @@
+#eloquim_server/lib/src/protocol/conversation.spy.yaml
+class: Conversation
+table: conversations
+fields:
+  id: int, primary, autoIncrement
+  type: String, default="p2p"
+  title: String?
+  participantIds: List<int>
+  startedAt: DateTime, default=now
+  lastMessageAt: DateTime, default=now
+  chemistryScore: double?
+  status: String, default="active"
+indexes:
+  conversations_participants_idx:
+    fields: participantIds
+    type: gin
+  conversations_last_message_idx:
+    fields: lastMessageAt
+    type: btree

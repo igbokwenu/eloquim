@@ -1,0 +1,26 @@
+#eloquim_server/lib/src/protocol/conversation.spy.yaml
+class: Message
+table: messages
+fields:
+  id: int, primary, autoIncrement
+  conversationId: int, relation(parent=Conversation)
+  senderId: int, relation(parent=User)
+  emojiSequence: List<String>
+  rawIntent: String?
+  translatedText: String
+  tone: String, default="casual"
+  personaUsed: String
+  confidenceScore: double, default=0.0
+  mediaGifUrl: String?
+  replyToMsgId: int?
+  createdAt: DateTime, default=now
+  deliveredAt: DateTime?
+  readAt: DateTime?
+  isEncrypted: bool, default=false
+indexes:
+  messages_conversation_idx:
+    fields: conversationId, createdAt
+    type: btree
+  messages_sender_idx:
+    fields: senderId, createdAt
+    type: btree
