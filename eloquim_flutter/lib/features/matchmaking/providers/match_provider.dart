@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:eloquim_client/eloquim_client.dart';
 import '../../../core/providers/serverpod_client_provider.dart';
 
-class MatchNotifier extends AutoDisposeAsyncNotifier<User?> {
+class MatchNotifier extends AsyncNotifier<User?> {
   List<User> _matches = [];
   int _currentIndex = 0;
 
@@ -50,6 +50,6 @@ class MatchNotifier extends AutoDisposeAsyncNotifier<User?> {
   }
 }
 
-final matchProvider = AutoDisposeAsyncNotifierProvider<MatchNotifier, User?>(
+final matchProvider = AsyncNotifierProvider.autoDispose<MatchNotifier, User?>(
   MatchNotifier.new,
 );

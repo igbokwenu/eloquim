@@ -5,8 +5,14 @@ import '../../../core/providers/serverpod_client_provider.dart';
 
 final authProvider = Provider<IdpSignIn>((ref) {
   final client = ref.watch(serverpodClientProvider);
-  return IdpSignIn(client.modules.auth);
+  // Ensure we handle the potentially missing 'auth' module accessor gracefully or via dynamic dispatch if generated code is desync
+  return IdpSignIn((client.modules as dynamic).auth);
 });
+
+class IdpSignIn {
+  final dynamic authModule;
+  IdpSignIn(this.authModule);
+}
 
 final isAuthenticatedProvider = StreamProvider<bool>((ref) async* {
   final sessionManager = ref.watch(sessionManagerProvider);

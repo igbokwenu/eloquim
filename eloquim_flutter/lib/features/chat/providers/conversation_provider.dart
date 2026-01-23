@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:eloquim_client/eloquim_client.dart';
 import '../../../core/providers/serverpod_client_provider.dart';
 
-class ConversationsNotifier extends AutoDisposeAsyncNotifier<List<Conversation>> {
+class ConversationsNotifier extends AsyncNotifier<List<Conversation>> {
   @override
   Future<List<Conversation>> build() async {
     final client = ref.read(serverpodClientProvider);
@@ -16,7 +16,10 @@ class ConversationsNotifier extends AutoDisposeAsyncNotifier<List<Conversation>>
     }
   }
 
-  Future<Conversation> createConversation(List<int> participantIds, String? title) async {
+  Future<Conversation> createConversation(
+    List<int> participantIds,
+    String? title,
+  ) async {
     final client = ref.read(serverpodClientProvider);
 
     final conversation = await client.conversation.createConversation(
@@ -53,8 +56,10 @@ class ConversationsNotifier extends AutoDisposeAsyncNotifier<List<Conversation>>
   }
 }
 
-final conversationsProvider = AutoDisposeAsyncNotifierProvider<
-    ConversationsNotifier,
-    List<Conversation>>(
-  ConversationsNotifier.new,
-);
+final conversationsProvider =
+    AsyncNotifierProvider.autoDispose<
+      ConversationsNotifier,
+      List<Conversation>
+    >(
+      ConversationsNotifier.new,
+    );

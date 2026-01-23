@@ -25,8 +25,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     super.initState();
     // Set current conversation
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(currentConversationIdProvider.notifier).state = 
-          widget.conversationId;
+      ref
+          .read(currentConversationIdProvider.notifier)
+          .set(widget.conversationId);
     });
   }
 
@@ -92,11 +93,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         },
                       ),
               ),
-              
+
               // Message composer
               MessageComposer(
                 onSend: (text, emojis) async {
-                  await ref.read(chatProvider.notifier).sendMessage(text, emojis);
+                  await ref
+                      .read(chatProvider.notifier)
+                      .sendMessage(text, emojis);
                 },
                 currentTone: chatState.currentTone,
                 onToneChanged: (tone) {

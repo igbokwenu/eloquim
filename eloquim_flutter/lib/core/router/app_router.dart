@@ -15,13 +15,13 @@ import '../providers/serverpod_client_provider.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final isAuthenticatedAsync = ref.watch(isAuthenticatedProvider);
-  final isAuthenticated = isAuthenticatedAsync.valueOrNull ?? false;
+  final isAuthenticated = isAuthenticatedAsync.asData?.value ?? false;
 
   return GoRouter(
     initialLocation: '/',
     redirect: (context, state) {
       // If not authenticated and not on welcome/quiz, redirect to welcome
-      if (!isAuthenticated && 
+      if (!isAuthenticated &&
           !state.matchedLocation.startsWith('/welcome') &&
           !state.matchedLocation.startsWith('/quiz')) {
         return '/welcome';

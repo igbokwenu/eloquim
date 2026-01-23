@@ -4,7 +4,7 @@ import 'package:eloquim_client/eloquim_client.dart';
 import '../../../core/providers/serverpod_client_provider.dart';
 import 'chat_provider.dart';
 
-class RecommendationNotifier extends AutoDisposeAsyncNotifier<RecommendationResponse> {
+class RecommendationNotifier extends AsyncNotifier<RecommendationResponse> {
   @override
   Future<RecommendationResponse> build() async {
     // Return empty initial state
@@ -22,7 +22,7 @@ class RecommendationNotifier extends AutoDisposeAsyncNotifier<RecommendationResp
 
     final client = ref.read(serverpodClientProvider);
     final conversationId = ref.read(currentConversationIdProvider);
-    final chatState = ref.read(chatProvider).valueOrNull;
+    final chatState = ref.read(chatProvider).asData?.value;
 
     if (conversationId == null) return;
 
@@ -37,10 +37,12 @@ class RecommendationNotifier extends AutoDisposeAsyncNotifier<RecommendationResp
       state = AsyncData(recommendations);
     } catch (e) {
       // Keep current state on error, or provide fallback
-      state = AsyncData(RecommendationResponse(
-        singles: ['😊', '👍', '😂', '❤️', '🔥', '✨'],
-        combos: [],
-      ));
+      state = AsyncData(
+        RecommendationResponse(
+          singles: ['😊', '👍', '😂', '❤️', '🔥', '✨'],
+          combos: [],
+        ),
+      );
     }
   }
 
@@ -49,8 +51,10 @@ class RecommendationNotifier extends AutoDisposeAsyncNotifier<RecommendationResp
   }
 }
 
-final recommendationsProvider = AutoDisposeAsyncNotifierProvider<
-    RecommendationNotifier,
-    RecommendationResponse>(
-  RecommendationNotifier.new,
-);
+final recommendationsProvider =
+    AsyncNotifierProvider.autoDispose<
+      RecommendationNotifier,
+      RecommendationResponse
+    >(
+      RecommendationNotifier.new,
+    );

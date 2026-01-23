@@ -15,7 +15,7 @@ class ChatBubble extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentUserAsync = ref.watch(currentUserProvider);
-    final currentUser = currentUserAsync.valueOrNull;
+    final currentUser = currentUserAsync.asData?.value;
     final isMine = currentUser != null && message.senderId == currentUser.id;
 
     return Align(
@@ -67,7 +67,7 @@ class ChatBubble extends ConsumerWidget {
                     '${(message.confidenceScore * 100).toInt()}% confident',
                     style: TextStyle(
                       fontSize: 10,
-                      color: isMine 
+                      color: isMine
                           ? Colors.white.withOpacity(0.7)
                           : Colors.black54,
                     ),

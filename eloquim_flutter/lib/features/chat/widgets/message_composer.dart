@@ -69,9 +69,9 @@ class _MessageComposerState extends ConsumerState<MessageComposer> {
         child: Column(
           children: [
             // Emoji suggestions
-            if (recommendationsAsync.valueOrNull != null &&
-                recommendationsAsync.value!.singles.isNotEmpty)
-              _buildSuggestions(recommendationsAsync.value!.singles),
+            if (recommendationsAsync.asData?.value != null &&
+                recommendationsAsync.asData!.value.singles.isNotEmpty)
+              _buildSuggestions(recommendationsAsync.asData!.value.singles),
 
             // Tone selector
             _buildToneSelector(),
@@ -110,7 +110,8 @@ class _MessageComposerState extends ConsumerState<MessageComposer> {
                       onChanged: (text) {
                         // Trigger recommendations
                         if (text.isNotEmpty) {
-                          ref.read(recommendationsProvider.notifier)
+                          ref
+                              .read(recommendationsProvider.notifier)
                               .getRecommendations(text);
                         }
                       },

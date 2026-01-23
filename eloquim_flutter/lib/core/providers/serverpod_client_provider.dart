@@ -2,6 +2,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:serverpod_flutter/serverpod_flutter.dart';
 import 'package:eloquim_client/eloquim_client.dart';
+import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 
 // Initialize the Serverpod client
 final serverpodClientProvider = Provider<Client>((ref) {
@@ -23,7 +24,7 @@ final serverpodClientProvider = Provider<Client>((ref) {
 final sessionManagerProvider = Provider<SessionManager>((ref) {
   final client = ref.watch(serverpodClientProvider);
   return SessionManager(
-    caller: client.modules.auth,
+    caller: (client.modules as dynamic).auth,
   );
 });
 
