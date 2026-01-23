@@ -3,100 +3,143 @@ import 'dart:io';
 import 'package:serverpod/serverpod.dart';
 import 'package:serverpod_auth_idp_server/core.dart';
 import 'package:serverpod_auth_idp_server/providers/email.dart';
+// FIX 1: Import mailer with a prefix to avoid conflict with your Chat 'Message' class
+import 'package:mailer/mailer.dart' as mail;
+import 'package:mailer/smtp_server.dart';
 
 import 'src/generated/endpoints.dart';
 import 'src/generated/protocol.dart';
 import 'src/web/routes/app_config_route.dart';
 import 'src/web/routes/root.dart';
+import 'src/endpoints/persona_endpoint.dart';
 
-/// The starting point of the Serverpod server.
+// Define SMTP Server globally
+SmtpServer? _smtpServer;
+
 void run(List<String> args) async {
-  // Initialize Serverpod and connect it with your generated code.
   final pod = Serverpod(args, Protocol(), Endpoints());
 
-  // Initialize authentication services for the server.
-  // Token managers will be used to validate and issue authentication keys,
-  // and the identity providers will be the authentication options available for users.
+  // 1. SETUP EMAIL (SMTP)
+  final smtpEmail = pod.getPassword('smtpUsername');
+  final smtpPassword = pod.getPassword('smtpPassword');
+
+  if (smtpEmail != null && smtpPassword != null) {
+    _smtpServer = gmail(smtpEmail, smtpPassword);
+  } else {
+    // FIX 2: Use print instead of pod.log for startup messages
+    print(
+      'WARNING: SMTP credentials not found in passwords.yaml. Emails will be logged to console.',
+    );
+  }
+
+  // 2. INITIALIZE AUTH
   pod.initializeAuthServices(
     tokenManagerBuilders: [
-      // Use JWT for authentication keys towards the server.
       JwtConfigFromPasswords(),
     ],
     identityProviderBuilders: [
-      // Configure the email identity provider for email/password authentication.
       EmailIdpConfigFromPasswords(
-        sendRegistrationVerificationCode: _sendRegistrationCode,
-        sendPasswordResetVerificationCode: _sendPasswordResetCode,
+        sendRegistrationVerificationCode:
+            (
+              session, {
+              required email,
+              required verificationCode,
+              required accountRequestId,
+              required transaction,
+            }) async {
+              await _sendEmail(
+                session,
+                to: email,
+                subject: 'Verify your Eloquim Account',
+                text: 'Your verification code is: $verificationCode',
+              );
+            },
+        sendPasswordResetVerificationCode:
+            (
+              session, {
+              required email,
+              required verificationCode,
+              required passwordResetRequestId,
+              required transaction,
+            }) async {
+              await _sendEmail(
+                session,
+                to: email,
+                subject: 'Reset your Password',
+                text: 'Your password reset code is: $verificationCode',
+              );
+            },
       ),
     ],
   );
 
-  // Setup a default page at the web root.
-  // These are used by the default page.
+  // 3. WEB SERVER ROUTES
   pod.webServer.addRoute(RootRoute(), '/');
   pod.webServer.addRoute(RootRoute(), '/index.html');
-
-  // Serve all files in the web/static relative directory under /.
-  // These are used by the default web page.
   final root = Directory(Uri(path: 'web/static').toFilePath());
   pod.webServer.addRoute(StaticRoute.directory(root));
-
-  // Setup the app config route.
-  // We build this configuration based on the servers api url and serve it to
-  // the flutter app.
   pod.webServer.addRoute(
     AppConfigRoute(apiConfig: pod.config.apiServer),
     '/app/assets/assets/config.json',
   );
 
-  // Checks if the flutter web app has been built and serves it if it has.
   final appDir = Directory(Uri(path: 'web/app').toFilePath());
   if (appDir.existsSync()) {
-    // Serve the flutter web app under the /app path.
     pod.webServer.addRoute(
-      FlutterRoute(
-        Directory(
-          Uri(path: 'web/app').toFilePath(),
-        ),
-      ),
+      FlutterRoute(Directory(Uri(path: 'web/app').toFilePath())),
       '/app',
     );
   } else {
-    // If the flutter web app has not been built, serve the build app page.
     pod.webServer.addRoute(
       StaticRoute.file(
-        File(
-          Uri(path: 'web/pages/build_flutter_app.html').toFilePath(),
-        ),
+        File(Uri(path: 'web/pages/build_flutter_app.html').toFilePath()),
       ),
       '/app/**',
     );
   }
 
-  // Start the server.
+  // 4. START SERVER
   await pod.start();
+
+  // 5. SEED DATA
+  try {
+    final session = await pod.createSession();
+    final personaEndpoint = PersonaEndpoint();
+    await personaEndpoint.seedOfficialPersonas(session);
+    await session.close();
+    print('Seeding check complete.');
+  } catch (e) {
+    print('Error during seeding: $e');
+  }
 }
 
-void _sendRegistrationCode(
+/// Helper function to send emails
+Future<void> _sendEmail(
   Session session, {
-  required String email,
-  required UuidValue accountRequestId,
-  required String verificationCode,
-  required Transaction? transaction,
-}) {
-  // NOTE: Here you call your mail service to send the verification code to
-  // the user. For testing, we will just log the verification code.
-  session.log('[EmailIdp] Registration code ($email): $verificationCode');
-}
+  required String to,
+  required String subject,
+  required String text,
+}) async {
+  if (_smtpServer != null) {
+    // FIX 3: Use the prefixed 'mail.Message'
+    final message = mail.Message()
+      ..from = mail.Address(_smtpServer!.username!, 'Eloquim Bot')
+      ..recipients.add(to)
+      ..subject = subject
+      ..text = text;
 
-void _sendPasswordResetCode(
-  Session session, {
-  required String email,
-  required UuidValue passwordResetRequestId,
-  required String verificationCode,
-  required Transaction? transaction,
-}) {
-  // NOTE: Here you call your mail service to send the verification code to
-  // the user. For testing, we will just log the verification code.
-  session.log('[EmailIdp] Password reset code ($email): $verificationCode');
+    try {
+      final sendReport = await mail.send(message, _smtpServer!);
+      session.log('Email sent to $to: ${sendReport.toString()}');
+    } catch (e) {
+      session.log('Failed to send email to $to: $e', level: LogLevel.error);
+    }
+  } else {
+    // Fallback logging
+    session.log('--------------------------------------------------');
+    session.log('EMAIL SIMULATION to: $to');
+    session.log('Subject: $subject');
+    session.log('Content: $text');
+    session.log('--------------------------------------------------');
+  }
 }

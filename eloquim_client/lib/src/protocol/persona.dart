@@ -18,7 +18,7 @@ abstract class Persona implements _i1.SerializableModel {
   Persona._({
     this.id,
     required this.name,
-    required this.creatorId,
+    this.creatorId,
     this.creator,
     bool? isOfficial,
     required this.description,
@@ -33,7 +33,7 @@ abstract class Persona implements _i1.SerializableModel {
   factory Persona({
     int? id,
     required String name,
-    required int creatorId,
+    int? creatorId,
     _i2.User? creator,
     bool? isOfficial,
     required String description,
@@ -47,7 +47,7 @@ abstract class Persona implements _i1.SerializableModel {
     return Persona(
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
-      creatorId: jsonSerialization['creatorId'] as int,
+      creatorId: jsonSerialization['creatorId'] as int?,
       creator: jsonSerialization['creator'] == null
           ? null
           : _i3.Protocol().deserialize<_i2.User>(jsonSerialization['creator']),
@@ -69,7 +69,7 @@ abstract class Persona implements _i1.SerializableModel {
 
   String name;
 
-  int creatorId;
+  int? creatorId;
 
   _i2.User? creator;
 
@@ -106,7 +106,7 @@ abstract class Persona implements _i1.SerializableModel {
       '__className__': 'Persona',
       if (id != null) 'id': id,
       'name': name,
-      'creatorId': creatorId,
+      if (creatorId != null) 'creatorId': creatorId,
       if (creator != null) 'creator': creator?.toJson(),
       'isOfficial': isOfficial,
       'description': description,
@@ -129,7 +129,7 @@ class _PersonaImpl extends Persona {
   _PersonaImpl({
     int? id,
     required String name,
-    required int creatorId,
+    int? creatorId,
     _i2.User? creator,
     bool? isOfficial,
     required String description,
@@ -157,7 +157,7 @@ class _PersonaImpl extends Persona {
   Persona copyWith({
     Object? id = _Undefined,
     String? name,
-    int? creatorId,
+    Object? creatorId = _Undefined,
     Object? creator = _Undefined,
     bool? isOfficial,
     String? description,
@@ -169,7 +169,7 @@ class _PersonaImpl extends Persona {
     return Persona(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
-      creatorId: creatorId ?? this.creatorId,
+      creatorId: creatorId is int? ? creatorId : this.creatorId,
       creator: creator is _i2.User? ? creator : this.creator?.copyWith(),
       isOfficial: isOfficial ?? this.isOfficial,
       description: description ?? this.description,

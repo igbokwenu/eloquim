@@ -4,8 +4,8 @@ table: personas
 fields:
   name: String
 
-  # Relation: Serverpod auto-generates 'int? creatorId'
-  creator: User?, relation
+  creatorId: int?
+  creator: User?, relation(field=creatorId)
 
   isOfficial: bool, default=false
   description: String

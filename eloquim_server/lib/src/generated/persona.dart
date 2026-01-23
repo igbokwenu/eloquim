@@ -20,7 +20,7 @@ abstract class Persona
   Persona._({
     this.id,
     required this.name,
-    required this.creatorId,
+    this.creatorId,
     this.creator,
     bool? isOfficial,
     required this.description,
@@ -35,7 +35,7 @@ abstract class Persona
   factory Persona({
     int? id,
     required String name,
-    required int creatorId,
+    int? creatorId,
     _i2.User? creator,
     bool? isOfficial,
     required String description,
@@ -49,7 +49,7 @@ abstract class Persona
     return Persona(
       id: jsonSerialization['id'] as int?,
       name: jsonSerialization['name'] as String,
-      creatorId: jsonSerialization['creatorId'] as int,
+      creatorId: jsonSerialization['creatorId'] as int?,
       creator: jsonSerialization['creator'] == null
           ? null
           : _i3.Protocol().deserialize<_i2.User>(jsonSerialization['creator']),
@@ -73,7 +73,7 @@ abstract class Persona
 
   String name;
 
-  int creatorId;
+  int? creatorId;
 
   _i2.User? creator;
 
@@ -113,7 +113,7 @@ abstract class Persona
       '__className__': 'Persona',
       if (id != null) 'id': id,
       'name': name,
-      'creatorId': creatorId,
+      if (creatorId != null) 'creatorId': creatorId,
       if (creator != null) 'creator': creator?.toJson(),
       'isOfficial': isOfficial,
       'description': description,
@@ -130,7 +130,7 @@ abstract class Persona
       '__className__': 'Persona',
       if (id != null) 'id': id,
       'name': name,
-      'creatorId': creatorId,
+      if (creatorId != null) 'creatorId': creatorId,
       if (creator != null) 'creator': creator?.toJsonForProtocol(),
       'isOfficial': isOfficial,
       'description': description,
@@ -177,7 +177,7 @@ class _PersonaImpl extends Persona {
   _PersonaImpl({
     int? id,
     required String name,
-    required int creatorId,
+    int? creatorId,
     _i2.User? creator,
     bool? isOfficial,
     required String description,
@@ -205,7 +205,7 @@ class _PersonaImpl extends Persona {
   Persona copyWith({
     Object? id = _Undefined,
     String? name,
-    int? creatorId,
+    Object? creatorId = _Undefined,
     Object? creator = _Undefined,
     bool? isOfficial,
     String? description,
@@ -217,7 +217,7 @@ class _PersonaImpl extends Persona {
     return Persona(
       id: id is int? ? id : this.id,
       name: name ?? this.name,
-      creatorId: creatorId ?? this.creatorId,
+      creatorId: creatorId is int? ? creatorId : this.creatorId,
       creator: creator is _i2.User? ? creator : this.creator?.copyWith(),
       isOfficial: isOfficial ?? this.isOfficial,
       description: description ?? this.description,
@@ -237,7 +237,7 @@ class PersonaUpdateTable extends _i1.UpdateTable<PersonaTable> {
     value,
   );
 
-  _i1.ColumnValue<int, int> creatorId(int value) => _i1.ColumnValue(
+  _i1.ColumnValue<int, int> creatorId(int? value) => _i1.ColumnValue(
     table.creatorId,
     value,
   );
@@ -408,6 +408,8 @@ class PersonaRepository {
   const PersonaRepository._();
 
   final attachRow = const PersonaAttachRowRepository._();
+
+  final detachRow = const PersonaDetachRowRepository._();
 
   /// Returns a list of [Persona]s matching the given query parameters.
   ///
@@ -684,6 +686,32 @@ class PersonaAttachRowRepository {
     }
 
     var $persona = persona.copyWith(creatorId: creator.id);
+    await session.db.updateRow<Persona>(
+      $persona,
+      columns: [Persona.t.creatorId],
+      transaction: transaction,
+    );
+  }
+}
+
+class PersonaDetachRowRepository {
+  const PersonaDetachRowRepository._();
+
+  /// Detaches the relation between this [Persona] and the [User] set in `creator`
+  /// by setting the [Persona]'s foreign key `creatorId` to `null`.
+  ///
+  /// This removes the association between the two models without deleting
+  /// the related record.
+  Future<void> creator(
+    _i1.Session session,
+    Persona persona, {
+    _i1.Transaction? transaction,
+  }) async {
+    if (persona.id == null) {
+      throw ArgumentError.notNull('persona.id');
+    }
+
+    var $persona = persona.copyWith(creatorId: null);
     await session.db.updateRow<Persona>(
       $persona,
       columns: [Persona.t.creatorId],

@@ -3,11 +3,10 @@ import 'package:serverpod/serverpod.dart';
 import '../generated/protocol.dart';
 
 class UserEndpoint extends Endpoint {
-  
   Future<User?> getCurrentUser(Session session) async {
     final authInfo = await session.authenticated;
     if (authInfo == null) return null;
-    
+
     // Parse the ID
     final userId = int.parse(authInfo.userIdentifier);
 
@@ -23,15 +22,13 @@ class UserEndpoint extends Endpoint {
   }) async {
     final authInfo = await session.authenticated;
     if (authInfo == null) throw Exception('Not authenticated');
-    
+
     final userId = int.parse(authInfo.userIdentifier);
 
     var user = await User.db.findById(session, userId);
-    
+
     if (user == null) {
       // Create new user
-      // FIX: Explicitly set ID to match Auth ID. 
-      // Initialize personaId to null or a default.
       user = User(
         id: userId,
         username: username ?? 'User$userId',
@@ -39,7 +36,7 @@ class UserEndpoint extends Endpoint {
         gender: gender,
         age: age,
         country: country,
-        personaId: 0, // FIX: Pass nullable
+        // FIX: Removed "personaId: 0". The field is nullable (int?), so omitting it sets it to null.
         emojiSignature: '✨🎵💫',
         hasDoneTutorial: false,
         createdAt: DateTime.now(),
@@ -56,10 +53,13 @@ class UserEndpoint extends Endpoint {
         country: country,
         lastSeen: DateTime.now(),
       );
-      
+
       return await User.db.updateRow(session, updatedUser);
     }
   }
+
+  // ... (Rest of the file remains exactly the same as your previous paste) ...
+  // completeTutorial, getUser, updateLastSeen, findMatches...
 
   Future<void> completeTutorial(Session session) async {
     final authInfo = await session.authenticated;
@@ -100,23 +100,25 @@ class UserEndpoint extends Endpoint {
     if (authInfo == null) throw Exception('Not authenticated');
     final userId = int.parse(authInfo.userIdentifier);
 
-    // FIX: Using simple find, filtering in memory for complex exclusions in V1
     var matches = await User.db.find(
       session,
       where: (t) => t.isAnonymous.equals(false),
-      limit: limit * 2, // Fetch more to filter
+      limit: limit * 2,
       orderBy: (t) => t.lastSeen,
       orderDescending: true,
     );
 
-    // Filter out self and apply filters
     var filtered = matches.where((u) => u.id != userId).toList();
 
     if (minAge != null) {
-      filtered = filtered.where((u) => u.age != null && u.age! >= minAge).toList();
+      filtered = filtered
+          .where((u) => u.age != null && u.age! >= minAge)
+          .toList();
     }
     if (maxAge != null) {
-      filtered = filtered.where((u) => u.age != null && u.age! <= maxAge).toList();
+      filtered = filtered
+          .where((u) => u.age != null && u.age! <= maxAge)
+          .toList();
     }
     if (country != null) {
       filtered = filtered.where((u) => u.country == country).toList();

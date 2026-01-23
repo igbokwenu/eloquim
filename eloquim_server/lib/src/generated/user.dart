@@ -23,7 +23,7 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
     this.gender,
     this.age,
     this.country,
-    required this.personaId,
+    this.personaId,
     this.persona,
     String? emojiSignature,
     bool? hasDoneTutorial,
@@ -43,7 +43,7 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
     String? gender,
     int? age,
     String? country,
-    required int personaId,
+    int? personaId,
     _i2.Persona? persona,
     String? emojiSignature,
     bool? hasDoneTutorial,
@@ -60,7 +60,7 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
       gender: jsonSerialization['gender'] as String?,
       age: jsonSerialization['age'] as int?,
       country: jsonSerialization['country'] as String?,
-      personaId: jsonSerialization['personaId'] as int,
+      personaId: jsonSerialization['personaId'] as int?,
       persona: jsonSerialization['persona'] == null
           ? null
           : _i3.Protocol().deserialize<_i2.Persona>(
@@ -95,7 +95,7 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
 
   String? country;
 
-  int personaId;
+  int? personaId;
 
   _i2.Persona? persona;
 
@@ -140,7 +140,7 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
       if (gender != null) 'gender': gender,
       if (age != null) 'age': age,
       if (country != null) 'country': country,
-      'personaId': personaId,
+      if (personaId != null) 'personaId': personaId,
       if (persona != null) 'persona': persona?.toJson(),
       'emojiSignature': emojiSignature,
       'hasDoneTutorial': hasDoneTutorial,
@@ -160,7 +160,7 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
       if (gender != null) 'gender': gender,
       if (age != null) 'age': age,
       if (country != null) 'country': country,
-      'personaId': personaId,
+      if (personaId != null) 'personaId': personaId,
       if (persona != null) 'persona': persona?.toJsonForProtocol(),
       'emojiSignature': emojiSignature,
       'hasDoneTutorial': hasDoneTutorial,
@@ -210,7 +210,7 @@ class _UserImpl extends User {
     String? gender,
     int? age,
     String? country,
-    required int personaId,
+    int? personaId,
     _i2.Persona? persona,
     String? emojiSignature,
     bool? hasDoneTutorial,
@@ -244,7 +244,7 @@ class _UserImpl extends User {
     Object? gender = _Undefined,
     Object? age = _Undefined,
     Object? country = _Undefined,
-    int? personaId,
+    Object? personaId = _Undefined,
     Object? persona = _Undefined,
     String? emojiSignature,
     bool? hasDoneTutorial,
@@ -259,7 +259,7 @@ class _UserImpl extends User {
       gender: gender is String? ? gender : this.gender,
       age: age is int? ? age : this.age,
       country: country is String? ? country : this.country,
-      personaId: personaId ?? this.personaId,
+      personaId: personaId is int? ? personaId : this.personaId,
       persona: persona is _i2.Persona? ? persona : this.persona?.copyWith(),
       emojiSignature: emojiSignature ?? this.emojiSignature,
       hasDoneTutorial: hasDoneTutorial ?? this.hasDoneTutorial,
@@ -298,7 +298,7 @@ class UserUpdateTable extends _i1.UpdateTable<UserTable> {
     value,
   );
 
-  _i1.ColumnValue<int, int> personaId(int value) => _i1.ColumnValue(
+  _i1.ColumnValue<int, int> personaId(int? value) => _i1.ColumnValue(
     table.personaId,
     value,
   );
@@ -488,6 +488,8 @@ class UserRepository {
   const UserRepository._();
 
   final attachRow = const UserAttachRowRepository._();
+
+  final detachRow = const UserDetachRowRepository._();
 
   /// Returns a list of [User]s matching the given query parameters.
   ///
@@ -764,6 +766,32 @@ class UserAttachRowRepository {
     }
 
     var $user = user.copyWith(personaId: persona.id);
+    await session.db.updateRow<User>(
+      $user,
+      columns: [User.t.personaId],
+      transaction: transaction,
+    );
+  }
+}
+
+class UserDetachRowRepository {
+  const UserDetachRowRepository._();
+
+  /// Detaches the relation between this [User] and the [Persona] set in `persona`
+  /// by setting the [User]'s foreign key `personaId` to `null`.
+  ///
+  /// This removes the association between the two models without deleting
+  /// the related record.
+  Future<void> persona(
+    _i1.Session session,
+    User user, {
+    _i1.Transaction? transaction,
+  }) async {
+    if (user.id == null) {
+      throw ArgumentError.notNull('user.id');
+    }
+
+    var $user = user.copyWith(personaId: null);
     await session.db.updateRow<User>(
       $user,
       columns: [User.t.personaId],

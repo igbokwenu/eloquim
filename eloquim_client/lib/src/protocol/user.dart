@@ -22,7 +22,7 @@ abstract class User implements _i1.SerializableModel {
     this.gender,
     this.age,
     this.country,
-    required this.personaId,
+    this.personaId,
     this.persona,
     String? emojiSignature,
     bool? hasDoneTutorial,
@@ -42,7 +42,7 @@ abstract class User implements _i1.SerializableModel {
     String? gender,
     int? age,
     String? country,
-    required int personaId,
+    int? personaId,
     _i2.Persona? persona,
     String? emojiSignature,
     bool? hasDoneTutorial,
@@ -59,7 +59,7 @@ abstract class User implements _i1.SerializableModel {
       gender: jsonSerialization['gender'] as String?,
       age: jsonSerialization['age'] as int?,
       country: jsonSerialization['country'] as String?,
-      personaId: jsonSerialization['personaId'] as int,
+      personaId: jsonSerialization['personaId'] as int?,
       persona: jsonSerialization['persona'] == null
           ? null
           : _i3.Protocol().deserialize<_i2.Persona>(
@@ -92,7 +92,7 @@ abstract class User implements _i1.SerializableModel {
 
   String? country;
 
-  int personaId;
+  int? personaId;
 
   _i2.Persona? persona;
 
@@ -134,7 +134,7 @@ abstract class User implements _i1.SerializableModel {
       if (gender != null) 'gender': gender,
       if (age != null) 'age': age,
       if (country != null) 'country': country,
-      'personaId': personaId,
+      if (personaId != null) 'personaId': personaId,
       if (persona != null) 'persona': persona?.toJson(),
       'emojiSignature': emojiSignature,
       'hasDoneTutorial': hasDoneTutorial,
@@ -160,7 +160,7 @@ class _UserImpl extends User {
     String? gender,
     int? age,
     String? country,
-    required int personaId,
+    int? personaId,
     _i2.Persona? persona,
     String? emojiSignature,
     bool? hasDoneTutorial,
@@ -194,7 +194,7 @@ class _UserImpl extends User {
     Object? gender = _Undefined,
     Object? age = _Undefined,
     Object? country = _Undefined,
-    int? personaId,
+    Object? personaId = _Undefined,
     Object? persona = _Undefined,
     String? emojiSignature,
     bool? hasDoneTutorial,
@@ -209,7 +209,7 @@ class _UserImpl extends User {
       gender: gender is String? ? gender : this.gender,
       age: age is int? ? age : this.age,
       country: country is String? ? country : this.country,
-      personaId: personaId ?? this.personaId,
+      personaId: personaId is int? ? personaId : this.personaId,
       persona: persona is _i2.Persona? ? persona : this.persona?.copyWith(),
       emojiSignature: emojiSignature ?? this.emojiSignature,
       hasDoneTutorial: hasDoneTutorial ?? this.hasDoneTutorial,

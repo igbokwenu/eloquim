@@ -8,8 +8,8 @@ fields:
   age: int?
   country: String?
 
-  # Relation: Serverpod auto-generates 'int? personaId' because this is nullable
-  persona: Persona?, relation
+  personaId: int?
+  persona: Persona?, relation(field=personaId)
 
   emojiSignature: String, default="✨🎵💫"
   hasDoneTutorial: bool, default=false

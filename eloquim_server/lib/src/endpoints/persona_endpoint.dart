@@ -27,8 +27,7 @@ class PersonaEndpoint extends Endpoint {
       Persona(
         name: 'Gen Z',
         isOfficial: true,
-        // FIX: Provide explicit null or 0 for creatorId since official personas have no user creator
-        creatorId: 0,
+        // FIX: Removed "creatorId: 0". It defaults to null automatically.
         description: 'Casual, playful, and meme-fluent.',
         traitsJson: '{"openness": 0.8, "humor": 0.9}',
         communicationStyle: 'casual',
@@ -38,7 +37,6 @@ class PersonaEndpoint extends Endpoint {
       Persona(
         name: 'Professional',
         isOfficial: true,
-        creatorId: 0,
         description: 'Formal, clear, and respectful.',
         traitsJson: '{"openness": 0.5, "formality": 0.9}',
         communicationStyle: 'formal',
@@ -48,7 +46,6 @@ class PersonaEndpoint extends Endpoint {
       Persona(
         name: 'Romantic',
         isOfficial: true,
-        creatorId: 0,
         description: 'Poetic, emotional, and expressive.',
         traitsJson: '{"openness": 0.9, "emotion": 0.9}',
         communicationStyle: 'poetic',
