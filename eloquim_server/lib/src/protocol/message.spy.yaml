@@ -1,4 +1,4 @@
-#eloquim_server/lib/src/protocol/conversation.spy.yaml
+#eloquim_server/lib/src/protocol/message.spy.yaml
 class: Message
 table: messages
 fields:
