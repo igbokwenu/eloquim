@@ -81,8 +81,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
 // Helper provider for authentication state
 final isAuthenticatedProvider = StreamProvider<bool>((ref) async* {
-  final sessionManager = ref.watch(sessionManagerProvider);
-  await for (final userInfo in sessionManager.onUserChanged) {
-    yield userInfo != null;
-  }
+  final currentUserAsync = ref.watch(currentUserProvider);
+  yield currentUserAsync.asData?.value != null;
 });

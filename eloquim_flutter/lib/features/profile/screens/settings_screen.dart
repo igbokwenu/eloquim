@@ -140,8 +140,8 @@ class SettingsScreen extends ConsumerWidget {
 
               if (confirmed == true && context.mounted) {
                 try {
-                  final sessionManager = ref.read(sessionManagerProvider);
-                  await sessionManager.signOut();
+                  final client = ref.read(serverpodClientProvider);
+                  await (client.modules as dynamic).auth.signOut();
                   if (context.mounted) {
                     context.go('/welcome');
                   }

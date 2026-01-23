@@ -1,8 +1,10 @@
+import 'dart:async';
 // eloquim_flutter/lib/core/providers/serverpod_client_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:serverpod_flutter/serverpod_flutter.dart';
 import 'package:eloquim_client/eloquim_client.dart';
-import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
+
+import 'package:serverpod_auth_shared_flutter/serverpod_auth_shared_flutter.dart';
 
 // Initialize the Serverpod client
 final serverpodClientProvider = Provider<Client>((ref) {
@@ -16,7 +18,6 @@ final serverpodClientProvider = Provider<Client>((ref) {
 
   return Client(
     serverUrl,
-    authenticationKeyManager: FlutterAuthenticationKeyManager(),
   )..connectivityMonitor = FlutterConnectivityMonitor();
 });
 
@@ -29,22 +30,55 @@ final sessionManagerProvider = Provider<SessionManager>((ref) {
 });
 
 // Current user provider
-final currentUserProvider = StreamProvider<User?>((ref) async* {
+final currentUserProvider = StreamProvider<User?>((ref) {
   final client = ref.watch(serverpodClientProvider);
   final sessionManager = ref.watch(sessionManagerProvider);
 
-  // Listen to authentication state
-  await for (final userInfo in sessionManager.onUserChanged) {
-    if (userInfo == null) {
+  // We need to listen to the auth module's changes.
+  // Since we cast to dynamic, we assume 'auth' exists and has 'authInfoListenable'.
+  final authModule = (client.modules as dynamic).auth;
+
+  // Create a stream that emits when auth info changes.
+  // Note: This is a simplified stream creation.
+  return _authStream(authModule, client);
+});
+
+Stream<User?> _authStream(dynamic authModule, Client client) async* {
+  // Emit initial state
+  if (authModule.isSignedIn) {
+    try {
+      yield await client.user.getCurrentUser();
+    } catch (_) {
       yield null;
-    } else {
-      // Fetch full user profile
+    }
+  } else {
+    yield null;
+  }
+
+  // Monitor changes
+  // Ideally use a stream controller, but here we can use a simple loop or Stream.periodic check if listenable not easily streamable without StreamController boilerplate.
+  // Better: Create a controller.
+  final controller = StreamController<User?>();
+
+  void listener() async {
+    if (authModule.isSignedIn) {
       try {
         final user = await client.user.getCurrentUser();
-        yield user;
-      } catch (e) {
-        yield null;
+        controller.add(user);
+      } catch (_) {
+        controller.add(null);
       }
+    } else {
+      controller.add(null);
     }
   }
-});
+
+  authModule.authInfoListenable.addListener(listener);
+
+  controller.onCancel = () {
+    authModule.authInfoListenable.removeListener(listener);
+    controller.close();
+  };
+
+  yield* controller.stream;
+}

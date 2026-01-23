@@ -15,8 +15,6 @@ class IdpSignIn {
 }
 
 final isAuthenticatedProvider = StreamProvider<bool>((ref) async* {
-  final sessionManager = ref.watch(sessionManagerProvider);
-  await for (final userInfo in sessionManager.onUserChanged) {
-    yield userInfo != null;
-  }
+  final currentUserAsync = ref.watch(currentUserProvider);
+  yield currentUserAsync.asData?.value != null;
 });
