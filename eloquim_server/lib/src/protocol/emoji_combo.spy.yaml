@@ -1,0 +1,5 @@
+#eloquim_server/lib/src/protocol/emoji_combo.spy.yaml
+class: EmojiCombo
+fields:
+  emojis: List<String>
+  meaning: String

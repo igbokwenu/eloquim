@@ -2,13 +2,15 @@
 class: EmojiMapping
 table: emoji_mappings
 fields:
-  id: int, primary, autoIncrement
-  personaId: int, relation(parent=Persona)
+  # Relation: Serverpod auto-generates 'int personaId'
+  persona: Persona?, relation
+  
   emojiSequence: String
   canonicalText: String
   contextTags: List<String>
   usageCount: int, default=0
   createdAt: DateTime, default=now
+
 indexes:
   emoji_mappings_persona_idx:
     fields: personaId, emojiSequence

@@ -1,5 +1,5 @@
 // eloquim_server/lib/src/endpoints/conversation_endpoint.dart
-import 'package:serverpod/serverpod.dart';
+import 'package:serverpod/serverpod.dart'hide Message;
 import '../generated/protocol.dart';
 
 class ConversationEndpoint extends Endpoint {
@@ -10,16 +10,17 @@ class ConversationEndpoint extends Endpoint {
     if (authInfo == null) {
       throw Exception('Not authenticated');
     }
+    final userId = int.parse(authInfo.userIdentifier);
 
-    // Find all conversations where user is a participant
-    final conversations = await Conversation.db.find(
+    // FIX: Serverpod ORM doesn't support 'contains' on JSON arrays easily yet.
+    // Filter in Dart for V1. For V2/Scale, use a relational table "ConversationParticipant".
+    final allConversations = await Conversation.db.find(
       session,
-      where: (t) => t.participantIds.containsJson(authInfo.userId),
       orderBy: (t) => t.lastMessageAt,
       orderDescending: true,
     );
 
-    return conversations;
+    return allConversations.where((c) => c.participantIds.contains(userId)).toList();
   }
 
   /// Create a new conversation
@@ -32,10 +33,10 @@ class ConversationEndpoint extends Endpoint {
     if (authInfo == null) {
       throw Exception('Not authenticated');
     }
+    final userId = int.parse(authInfo.userIdentifier);
 
-    // Ensure current user is in participants
-    if (!participantIds.contains(authInfo.userId)) {
-      participantIds.add(authInfo.userId);
+    if (!participantIds.contains(userId)) {
+      participantIds.add(userId);
     }
 
     final conversation = Conversation(
@@ -50,10 +51,16 @@ class ConversationEndpoint extends Endpoint {
     final savedConversation = await Conversation.db.insertRow(session, conversation);
     
     // Notify all participants
+    // FIX: Use SystemNotification object instead of Map
+    final notification = SystemNotification(
+      type: 'new_conversation',
+      conversation: savedConversation,
+    );
+
     for (final participantId in participantIds) {
       await session.messages.postMessage(
         'user_$participantId',
-        {'type': 'new_conversation', 'conversation': savedConversation},
+        notification,
       );
     }
 
@@ -66,11 +73,12 @@ class ConversationEndpoint extends Endpoint {
     if (authInfo == null) {
       throw Exception('Not authenticated');
     }
+    final userId = int.parse(authInfo.userIdentifier);
 
     final conversation = await Conversation.db.findById(session, conversationId);
     
     if (conversation != null && 
-        !conversation.participantIds.contains(authInfo.userId)) {
+        !conversation.participantIds.contains(userId)) {
       throw Exception('Not a participant in this conversation');
     }
 
@@ -83,12 +91,14 @@ class ConversationEndpoint extends Endpoint {
     if (authInfo == null) {
       throw Exception('Not authenticated');
     }
+    final userId = int.parse(authInfo.userIdentifier);
 
     final conversation = await Conversation.db.findById(session, conversationId);
     if (conversation != null && 
-        conversation.participantIds.contains(authInfo.userId)) {
-      conversation.status = 'archived';
-      await Conversation.db.updateRow(session, conversation);
+        conversation.participantIds.contains(userId)) {
+      
+      final updated = conversation.copyWith(status: 'archived');
+      await Conversation.db.updateRow(session, updated);
     }
   }
 
@@ -98,21 +108,19 @@ class ConversationEndpoint extends Endpoint {
     if (authInfo == null) {
       throw Exception('Not authenticated');
     }
+    final userId = int.parse(authInfo.userIdentifier);
 
     final conversation = await Conversation.db.findById(session, conversationId);
     if (conversation != null && 
-        conversation.participantIds.contains(authInfo.userId)) {
-      // In a real app, you might want soft delete or remove user from participants
+        conversation.participantIds.contains(userId)) {
+      
       await Conversation.db.deleteRow(session, conversation);
       
       // Also delete all messages
-      final messages = await Message.db.find(
+      await Message.db.deleteWhere(
         session,
         where: (t) => t.conversationId.equals(conversationId),
       );
-      for (final message in messages) {
-        await Message.db.deleteRow(session, message);
-      }
     }
   }
 }

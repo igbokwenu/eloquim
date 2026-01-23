@@ -1,6 +1,6 @@
 // eloquim_server/lib/src/services/ai_translation_service.dart
 import 'dart:convert';
-import 'package:serverpod/serverpod.dart';
+import 'package:serverpod/serverpod.dart' hide Message;
 import '../generated/protocol.dart';
 import 'package:http/http.dart' as http;
 

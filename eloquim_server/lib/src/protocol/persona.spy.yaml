@@ -2,15 +2,18 @@
 class: Persona
 table: personas
 fields:
-  id: int, primary, autoIncrement
   name: String
-  creatorId: int?, relation(parent=User)
+
+  # Relation: Serverpod auto-generates 'int? creatorId'
+  creator: User?, relation
+
   isOfficial: bool, default=false
   description: String
   traitsJson: String
   communicationStyle: String
   packVersion: String, default="1.0"
   createdAt: DateTime, default=now
+
 indexes:
   personas_official_idx:
     fields: isOfficial

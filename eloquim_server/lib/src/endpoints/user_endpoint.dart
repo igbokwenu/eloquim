@@ -1,20 +1,19 @@
-// eloquim_server/lib/src/endpoints/user_endpoint.dart
+//eloquim_server/lib/src/endpoints/user_endpoint.dart
 import 'package:serverpod/serverpod.dart';
 import '../generated/protocol.dart';
 
 class UserEndpoint extends Endpoint {
   
-  /// Get current user profile
   Future<User?> getCurrentUser(Session session) async {
     final authInfo = await session.authenticated;
-    if (authInfo == null) {
-      return null;
-    }
+    if (authInfo == null) return null;
+    
+    // Parse the ID
+    final userId = int.parse(authInfo.userIdentifier);
 
-    return await User.db.findById(session, authInfo.userId);
+    return await User.db.findById(session, userId);
   }
 
-  /// Create or update user profile
   Future<User> updateProfile(
     Session session, {
     String? username,
@@ -23,21 +22,24 @@ class UserEndpoint extends Endpoint {
     String? country,
   }) async {
     final authInfo = await session.authenticated;
-    if (authInfo == null) {
-      throw Exception('Not authenticated');
-    }
+    if (authInfo == null) throw Exception('Not authenticated');
+    
+    final userId = int.parse(authInfo.userIdentifier);
 
-    var user = await User.db.findById(session, authInfo.userId);
+    var user = await User.db.findById(session, userId);
     
     if (user == null) {
       // Create new user
+      // FIX: Explicitly set ID to match Auth ID. 
+      // Initialize personaId to null or a default.
       user = User(
-        id: authInfo.userId,
-        username: username ?? 'User${authInfo.userId}',
+        id: userId,
+        username: username ?? 'User$userId',
         email: null,
         gender: gender,
         age: age,
         country: country,
+        personaId: 0, // FIX: Pass nullable
         emojiSignature: '✨🎵💫',
         hasDoneTutorial: false,
         createdAt: DateTime.now(),
@@ -47,50 +49,46 @@ class UserEndpoint extends Endpoint {
       return await User.db.insertRow(session, user);
     } else {
       // Update existing user
-      if (username != null) user.username = username;
-      if (gender != null) user.gender = gender;
-      if (age != null) user.age = age;
-      if (country != null) user.country = country;
-      user.lastSeen = DateTime.now();
+      final updatedUser = user.copyWith(
+        username: username,
+        gender: gender,
+        age: age,
+        country: country,
+        lastSeen: DateTime.now(),
+      );
       
-      return await User.db.updateRow(session, user);
+      return await User.db.updateRow(session, updatedUser);
     }
   }
 
-  /// Mark tutorial as completed
   Future<void> completeTutorial(Session session) async {
     final authInfo = await session.authenticated;
-    if (authInfo == null) {
-      throw Exception('Not authenticated');
-    }
+    if (authInfo == null) throw Exception('Not authenticated');
+    final userId = int.parse(authInfo.userIdentifier);
 
-    final user = await User.db.findById(session, authInfo.userId);
+    final user = await User.db.findById(session, userId);
     if (user != null) {
-      user.hasDoneTutorial = true;
-      await User.db.updateRow(session, user);
+      final updated = user.copyWith(hasDoneTutorial: true);
+      await User.db.updateRow(session, updated);
     }
   }
 
-  /// Get user by ID (for profile viewing)
   Future<User?> getUser(Session session, int userId) async {
     return await User.db.findById(session, userId);
   }
 
-  /// Update last seen timestamp
   Future<void> updateLastSeen(Session session) async {
     final authInfo = await session.authenticated;
-    if (authInfo == null) {
-      return;
-    }
+    if (authInfo == null) return;
+    final userId = int.parse(authInfo.userIdentifier);
 
-    final user = await User.db.findById(session, authInfo.userId);
+    final user = await User.db.findById(session, userId);
     if (user != null) {
-      user.lastSeen = DateTime.now();
-      await User.db.updateRow(session, user);
+      final updated = user.copyWith(lastSeen: DateTime.now());
+      await User.db.updateRow(session, updated);
     }
   }
 
-  /// Find potential matches
   Future<List<User>> findMatches(
     Session session, {
     int? minAge,
@@ -99,36 +97,31 @@ class UserEndpoint extends Endpoint {
     int limit = 10,
   }) async {
     final authInfo = await session.authenticated;
-    if (authInfo == null) {
-      throw Exception('Not authenticated');
-    }
+    if (authInfo == null) throw Exception('Not authenticated');
+    final userId = int.parse(authInfo.userIdentifier);
 
-    // Get current user
-    final currentUser = await User.db.findById(session, authInfo.userId);
-    if (currentUser == null) {
-      return [];
-    }
-
-    // Find users (excluding current user and anonymous users)
+    // FIX: Using simple find, filtering in memory for complex exclusions in V1
     var matches = await User.db.find(
       session,
-      where: (t) => t.id.notEquals(authInfo.userId) & t.isAnonymous.equals(false),
-      limit: limit,
+      where: (t) => t.isAnonymous.equals(false),
+      limit: limit * 2, // Fetch more to filter
       orderBy: (t) => t.lastSeen,
       orderDescending: true,
     );
 
-    // Apply filters
+    // Filter out self and apply filters
+    var filtered = matches.where((u) => u.id != userId).toList();
+
     if (minAge != null) {
-      matches = matches.where((u) => u.age != null && u.age! >= minAge).toList();
+      filtered = filtered.where((u) => u.age != null && u.age! >= minAge).toList();
     }
     if (maxAge != null) {
-      matches = matches.where((u) => u.age != null && u.age! <= maxAge).toList();
+      filtered = filtered.where((u) => u.age != null && u.age! <= maxAge).toList();
     }
     if (country != null) {
-      matches = matches.where((u) => u.country == country).toList();
+      filtered = filtered.where((u) => u.country == country).toList();
     }
 
-    return matches;
+    return filtered.take(limit).toList();
   }
 }

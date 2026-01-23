@@ -2,19 +2,25 @@
 class: User
 table: users
 fields:
-  id: int, primary, autoIncrement
   username: String
-  email: String?, index
+  email: String?
   gender: String?
   age: int?
   country: String?
-  personaId: int?, relation(parent=Persona)
+
+  # Relation: Serverpod auto-generates 'int? personaId' because this is nullable
+  persona: Persona?, relation
+
   emojiSignature: String, default="✨🎵💫"
   hasDoneTutorial: bool, default=false
   createdAt: DateTime, default=now
   lastSeen: DateTime, default=now
   isAnonymous: bool, default=true
+
 indexes:
   users_last_seen_idx:
     fields: lastSeen
     type: btree
+  users_email_idx:
+    fields: email
+    unique: false

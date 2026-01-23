@@ -1,11 +1,9 @@
 // eloquim_server/lib/src/endpoints/recommendation_endpoint.dart
-import 'package:serverpod/serverpod.dart';
+import 'package:serverpod/serverpod.dart' hide Message; // FIX: Hide Message
 import '../generated/protocol.dart';
 import '../services/ai_translation_service.dart';
 
 class RecommendationEndpoint extends Endpoint {
-  
-  /// Get emoji recommendations based on context
   Future<RecommendationResponse> getRecommendations(
     Session session,
     int conversationId,
@@ -14,12 +12,9 @@ class RecommendationEndpoint extends Endpoint {
     String personaId,
   ) async {
     final authInfo = await session.authenticated;
-    if (authInfo == null) {
-      throw Exception('Not authenticated');
-    }
+    if (authInfo == null) throw Exception('Not authenticated');
 
     try {
-      // Get conversation context
       final contextMessages = await Message.db.find(
         session,
         where: (t) => t.conversationId.equals(conversationId),
@@ -28,20 +23,17 @@ class RecommendationEndpoint extends Endpoint {
         limit: 6,
       );
 
-      // Call AI service
       final aiService = AITranslationService(session);
-      final recommendations = await aiService.recommendEmojis(
+      return await aiService.recommendEmojis(
         partialText: partialText,
         tone: tone,
         personaId: personaId,
         conversationContext: contextMessages.reversed.toList(),
       );
-
-      return recommendations;
     } catch (e) {
-      session.log('Error getting recommendations: $e', level: LogLevel.error);
-      
-      // Return fallback recommendations
+      session.log('Error: $e', level: LogLevel.error);
+
+      // Fallback
       return RecommendationResponse(
         singles: ['😊', '👍', '💯', '🔥', '✨', '😂'],
         combos: [

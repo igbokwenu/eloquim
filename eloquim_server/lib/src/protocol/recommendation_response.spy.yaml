@@ -3,8 +3,3 @@ class: RecommendationResponse
 fields:
   singles: List<String>
   combos: List<EmojiCombo>
-
-class: EmojiCombo
-fields:
-  emojis: List<String>
-  meaning: String

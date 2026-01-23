@@ -1,5 +1,5 @@
 // eloquim_server/lib/src/endpoints/chat_endpoint.dart
-import 'package:serverpod/serverpod.dart';
+import 'package:serverpod/serverpod.dart' hide Message; // FIX: Hide Serverpod's internal Message class
 import '../generated/protocol.dart';
 import '../services/ai_translation_service.dart';
 
@@ -15,10 +15,11 @@ class ChatEndpoint extends Endpoint {
     if (authInfo == null) {
       throw Exception('Not authenticated');
     }
-    final userId = authInfo.userId;
+    // FIX: Parse userId from string (Serverpod Auth standard)
+    final userId = int.parse(authInfo.userIdentifier);
 
     try {
-      // 2. Get conversation context (last 6 messages)
+      // 2. Get conversation context
       final contextMessages = await Message.db.find(
         session,
         where: (t) => t.conversationId.equals(request.conversationId),
@@ -72,10 +73,8 @@ class ChatEndpoint extends Endpoint {
 
   /// Stream messages for real-time chat
   Stream<Message> streamChat(Session session, int conversationId) async* {
-    // Verify user is participant
     await _verifyParticipant(session, conversationId);
 
-    // Create WebSocket stream
     final stream = session.messages.createStream<Message>(
       'chat_$conversationId',
     );
@@ -85,7 +84,7 @@ class ChatEndpoint extends Endpoint {
     }
   }
 
-  /// Get recent messages (for initial load)
+  /// Get recent messages
   Future<List<Message>> getMessages(
     Session session,
     int conversationId, {
@@ -116,12 +115,13 @@ class ChatEndpoint extends Endpoint {
     
     final message = await Message.db.findById(session, messageId);
     if (message != null) {
-      message.readAt = DateTime.now();
-      await Message.db.updateRow(session, message);
+      // Use copyWith for updates
+      final updatedMessage = message.copyWith(readAt: DateTime.now());
+      await Message.db.updateRow(session, updatedMessage);
     }
   }
 
-  /// Helper: Verify user is participant in conversation
+  /// Helper: Verify user is participant
   Future<void> _verifyParticipant(
     Session session,
     int conversationId,
@@ -130,26 +130,27 @@ class ChatEndpoint extends Endpoint {
     if (authInfo == null) {
       throw Exception('Not authenticated');
     }
+    final userId = int.parse(authInfo.userIdentifier);
     
     final conversation = await Conversation.db.findById(session, conversationId);
     if (conversation == null) {
       throw Exception('Conversation not found');
     }
 
-    if (!conversation.participantIds.contains(authInfo.userId)) {
+    if (!conversation.participantIds.contains(userId)) {
       throw Exception('Not a participant in this conversation');
     }
   }
 
-  /// Helper: Update conversation last message timestamp
+  /// Helper: Update conversation timestamp
   Future<void> _updateConversationTimestamp(
     Session session,
     int conversationId,
   ) async {
     final conversation = await Conversation.db.findById(session, conversationId);
     if (conversation != null) {
-      conversation.lastMessageAt = DateTime.now();
-      await Conversation.db.updateRow(session, conversation);
+      final updated = conversation.copyWith(lastMessageAt: DateTime.now());
+      await Conversation.db.updateRow(session, updated);
     }
   }
 }

@@ -3,8 +3,6 @@ import 'package:serverpod/serverpod.dart';
 import '../generated/protocol.dart';
 
 class PersonaEndpoint extends Endpoint {
-  
-  /// Get all official personas
   Future<List<Persona>> getOfficialPersonas(Session session) async {
     return await Persona.db.find(
       session,
@@ -13,29 +11,26 @@ class PersonaEndpoint extends Endpoint {
     );
   }
 
-  /// Get persona by ID
   Future<Persona?> getPersona(Session session, int personaId) async {
     return await Persona.db.findById(session, personaId);
   }
 
-  /// Create official personas (admin only - for initial setup)
   Future<void> seedOfficialPersonas(Session session) async {
-    // Check if already seeded
     final existing = await Persona.db.find(
       session,
       where: (t) => t.isOfficial.equals(true),
     );
 
-    if (existing.isNotEmpty) {
-      return; // Already seeded
-    }
+    if (existing.isNotEmpty) return;
 
     final personas = [
       Persona(
         name: 'Gen Z',
         isOfficial: true,
-        description: 'Casual, playful, and meme-fluent. Express yourself with modern vibes.',
-        traitsJson: '{"openness": 0.8, "humor": 0.9, "formality": 0.2}',
+        // FIX: Provide explicit null or 0 for creatorId since official personas have no user creator
+        creatorId: 0,
+        description: 'Casual, playful, and meme-fluent.',
+        traitsJson: '{"openness": 0.8, "humor": 0.9}',
         communicationStyle: 'casual',
         packVersion: '1.0',
         createdAt: DateTime.now(),
@@ -43,8 +38,9 @@ class PersonaEndpoint extends Endpoint {
       Persona(
         name: 'Professional',
         isOfficial: true,
-        description: 'Formal, clear, and respectful. Perfect for work communications.',
-        traitsJson: '{"openness": 0.5, "humor": 0.3, "formality": 0.9}',
+        creatorId: 0,
+        description: 'Formal, clear, and respectful.',
+        traitsJson: '{"openness": 0.5, "formality": 0.9}',
         communicationStyle: 'formal',
         packVersion: '1.0',
         createdAt: DateTime.now(),
@@ -52,8 +48,9 @@ class PersonaEndpoint extends Endpoint {
       Persona(
         name: 'Romantic',
         isOfficial: true,
-        description: 'Poetic, emotional, and expressive. Wear your heart on your sleeve.',
-        traitsJson: '{"openness": 0.9, "humor": 0.5, "formality": 0.4}',
+        creatorId: 0,
+        description: 'Poetic, emotional, and expressive.',
+        traitsJson: '{"openness": 0.9, "emotion": 0.9}',
         communicationStyle: 'poetic',
         packVersion: '1.0',
         createdAt: DateTime.now(),
@@ -65,24 +62,25 @@ class PersonaEndpoint extends Endpoint {
     }
   }
 
-  /// Assign persona to user
   Future<void> assignPersona(Session session, int personaId) async {
     final authInfo = await session.authenticated;
-    if (authInfo == null) {
-      throw Exception('Not authenticated');
-    }
+    if (authInfo == null) throw Exception('Not authenticated');
 
-    final user = await User.db.findById(session, authInfo.userId);
+    final userId = int.parse(authInfo.userIdentifier);
+
+    final user = await User.db.findById(session, userId);
     if (user != null) {
-      user.personaId = personaId;
-      
-      // Generate emoji signature based on persona
       final persona = await Persona.db.findById(session, personaId);
-      if (persona != null) {
-        user.emojiSignature = _generateEmojiSignature(persona.name);
-      }
-      
-      await User.db.updateRow(session, user);
+
+      // Update using copyWith
+      final updatedUser = user.copyWith(
+        personaId: personaId,
+        emojiSignature: persona != null
+            ? _generateEmojiSignature(persona.name)
+            : user.emojiSignature,
+      );
+
+      await User.db.updateRow(session, updatedUser);
     }
   }
 

@@ -11,14 +11,34 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
-import 'greetings/greeting.dart' as _i2;
-import 'send_message_request.dart' as _i3;
+import 'conversation.dart' as _i2;
+import 'emoji_combo.dart' as _i3;
+import 'emoji_mapping.dart' as _i4;
+import 'greetings/greeting.dart' as _i5;
+import 'message.dart' as _i6;
+import 'persona.dart' as _i7;
+import 'recommendation_response.dart' as _i8;
+import 'send_message_request.dart' as _i9;
+import 'system_notification.dart' as _i10;
+import 'user.dart' as _i11;
+import 'package:eloquim_client/src/protocol/message.dart' as _i12;
+import 'package:eloquim_client/src/protocol/conversation.dart' as _i13;
+import 'package:eloquim_client/src/protocol/persona.dart' as _i14;
+import 'package:eloquim_client/src/protocol/user.dart' as _i15;
 import 'package:serverpod_auth_idp_client/serverpod_auth_idp_client.dart'
-    as _i4;
+    as _i16;
 import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
-    as _i5;
+    as _i17;
+export 'conversation.dart';
+export 'emoji_combo.dart';
+export 'emoji_mapping.dart';
 export 'greetings/greeting.dart';
+export 'message.dart';
+export 'persona.dart';
+export 'recommendation_response.dart';
 export 'send_message_request.dart';
+export 'system_notification.dart';
+export 'user.dart';
 export 'client.dart';
 
 class Protocol extends _i1.SerializationManager {
@@ -55,34 +75,119 @@ class Protocol extends _i1.SerializationManager {
       }
     }
 
-    if (t == _i2.Greeting) {
-      return _i2.Greeting.fromJson(data) as T;
+    if (t == _i2.Conversation) {
+      return _i2.Conversation.fromJson(data) as T;
     }
-    if (t == _i3.SendMessageRequest) {
-      return _i3.SendMessageRequest.fromJson(data) as T;
+    if (t == _i3.EmojiCombo) {
+      return _i3.EmojiCombo.fromJson(data) as T;
     }
-    if (t == _i1.getType<_i2.Greeting?>()) {
-      return (data != null ? _i2.Greeting.fromJson(data) : null) as T;
+    if (t == _i4.EmojiMapping) {
+      return _i4.EmojiMapping.fromJson(data) as T;
     }
-    if (t == _i1.getType<_i3.SendMessageRequest?>()) {
-      return (data != null ? _i3.SendMessageRequest.fromJson(data) : null) as T;
+    if (t == _i5.Greeting) {
+      return _i5.Greeting.fromJson(data) as T;
+    }
+    if (t == _i6.Message) {
+      return _i6.Message.fromJson(data) as T;
+    }
+    if (t == _i7.Persona) {
+      return _i7.Persona.fromJson(data) as T;
+    }
+    if (t == _i8.RecommendationResponse) {
+      return _i8.RecommendationResponse.fromJson(data) as T;
+    }
+    if (t == _i9.SendMessageRequest) {
+      return _i9.SendMessageRequest.fromJson(data) as T;
+    }
+    if (t == _i10.SystemNotification) {
+      return _i10.SystemNotification.fromJson(data) as T;
+    }
+    if (t == _i11.User) {
+      return _i11.User.fromJson(data) as T;
+    }
+    if (t == _i1.getType<_i2.Conversation?>()) {
+      return (data != null ? _i2.Conversation.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i3.EmojiCombo?>()) {
+      return (data != null ? _i3.EmojiCombo.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i4.EmojiMapping?>()) {
+      return (data != null ? _i4.EmojiMapping.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i5.Greeting?>()) {
+      return (data != null ? _i5.Greeting.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i6.Message?>()) {
+      return (data != null ? _i6.Message.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i7.Persona?>()) {
+      return (data != null ? _i7.Persona.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i8.RecommendationResponse?>()) {
+      return (data != null ? _i8.RecommendationResponse.fromJson(data) : null)
+          as T;
+    }
+    if (t == _i1.getType<_i9.SendMessageRequest?>()) {
+      return (data != null ? _i9.SendMessageRequest.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i10.SystemNotification?>()) {
+      return (data != null ? _i10.SystemNotification.fromJson(data) : null)
+          as T;
+    }
+    if (t == _i1.getType<_i11.User?>()) {
+      return (data != null ? _i11.User.fromJson(data) : null) as T;
+    }
+    if (t == List<int>) {
+      return (data as List).map((e) => deserialize<int>(e)).toList() as T;
     }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
     }
+    if (t == List<_i3.EmojiCombo>) {
+      return (data as List).map((e) => deserialize<_i3.EmojiCombo>(e)).toList()
+          as T;
+    }
+    if (t == List<_i12.Message>) {
+      return (data as List).map((e) => deserialize<_i12.Message>(e)).toList()
+          as T;
+    }
+    if (t == List<_i13.Conversation>) {
+      return (data as List)
+              .map((e) => deserialize<_i13.Conversation>(e))
+              .toList()
+          as T;
+    }
+    if (t == List<int>) {
+      return (data as List).map((e) => deserialize<int>(e)).toList() as T;
+    }
+    if (t == List<_i14.Persona>) {
+      return (data as List).map((e) => deserialize<_i14.Persona>(e)).toList()
+          as T;
+    }
+    if (t == List<_i15.User>) {
+      return (data as List).map((e) => deserialize<_i15.User>(e)).toList() as T;
+    }
     try {
-      return _i4.Protocol().deserialize<T>(data, t);
+      return _i16.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
     try {
-      return _i5.Protocol().deserialize<T>(data, t);
+      return _i17.Protocol().deserialize<T>(data, t);
     } on _i1.DeserializationTypeNotFoundException catch (_) {}
     return super.deserialize<T>(data, t);
   }
 
   static String? getClassNameForType(Type type) {
     return switch (type) {
-      _i2.Greeting => 'Greeting',
-      _i3.SendMessageRequest => 'SendMessageRequest',
+      _i2.Conversation => 'Conversation',
+      _i3.EmojiCombo => 'EmojiCombo',
+      _i4.EmojiMapping => 'EmojiMapping',
+      _i5.Greeting => 'Greeting',
+      _i6.Message => 'Message',
+      _i7.Persona => 'Persona',
+      _i8.RecommendationResponse => 'RecommendationResponse',
+      _i9.SendMessageRequest => 'SendMessageRequest',
+      _i10.SystemNotification => 'SystemNotification',
+      _i11.User => 'User',
       _ => null,
     };
   }
@@ -97,16 +202,32 @@ class Protocol extends _i1.SerializationManager {
     }
 
     switch (data) {
-      case _i2.Greeting():
+      case _i2.Conversation():
+        return 'Conversation';
+      case _i3.EmojiCombo():
+        return 'EmojiCombo';
+      case _i4.EmojiMapping():
+        return 'EmojiMapping';
+      case _i5.Greeting():
         return 'Greeting';
-      case _i3.SendMessageRequest():
+      case _i6.Message():
+        return 'Message';
+      case _i7.Persona():
+        return 'Persona';
+      case _i8.RecommendationResponse():
+        return 'RecommendationResponse';
+      case _i9.SendMessageRequest():
         return 'SendMessageRequest';
+      case _i10.SystemNotification():
+        return 'SystemNotification';
+      case _i11.User():
+        return 'User';
     }
-    className = _i4.Protocol().getClassNameForObject(data);
+    className = _i16.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth_idp.$className';
     }
-    className = _i5.Protocol().getClassNameForObject(data);
+    className = _i17.Protocol().getClassNameForObject(data);
     if (className != null) {
       return 'serverpod_auth_core.$className';
     }
@@ -119,19 +240,43 @@ class Protocol extends _i1.SerializationManager {
     if (dataClassName is! String) {
       return super.deserializeByClassName(data);
     }
+    if (dataClassName == 'Conversation') {
+      return deserialize<_i2.Conversation>(data['data']);
+    }
+    if (dataClassName == 'EmojiCombo') {
+      return deserialize<_i3.EmojiCombo>(data['data']);
+    }
+    if (dataClassName == 'EmojiMapping') {
+      return deserialize<_i4.EmojiMapping>(data['data']);
+    }
     if (dataClassName == 'Greeting') {
-      return deserialize<_i2.Greeting>(data['data']);
+      return deserialize<_i5.Greeting>(data['data']);
+    }
+    if (dataClassName == 'Message') {
+      return deserialize<_i6.Message>(data['data']);
+    }
+    if (dataClassName == 'Persona') {
+      return deserialize<_i7.Persona>(data['data']);
+    }
+    if (dataClassName == 'RecommendationResponse') {
+      return deserialize<_i8.RecommendationResponse>(data['data']);
     }
     if (dataClassName == 'SendMessageRequest') {
-      return deserialize<_i3.SendMessageRequest>(data['data']);
+      return deserialize<_i9.SendMessageRequest>(data['data']);
+    }
+    if (dataClassName == 'SystemNotification') {
+      return deserialize<_i10.SystemNotification>(data['data']);
+    }
+    if (dataClassName == 'User') {
+      return deserialize<_i11.User>(data['data']);
     }
     if (dataClassName.startsWith('serverpod_auth_idp.')) {
       data['className'] = dataClassName.substring(19);
-      return _i4.Protocol().deserializeByClassName(data);
+      return _i16.Protocol().deserializeByClassName(data);
     }
     if (dataClassName.startsWith('serverpod_auth_core.')) {
       data['className'] = dataClassName.substring(20);
-      return _i5.Protocol().deserializeByClassName(data);
+      return _i17.Protocol().deserializeByClassName(data);
     }
     return super.deserializeByClassName(data);
   }
@@ -146,10 +291,10 @@ class Protocol extends _i1.SerializationManager {
       return null;
     }
     try {
-      return _i4.Protocol().mapRecordToJson(record);
+      return _i16.Protocol().mapRecordToJson(record);
     } catch (_) {}
     try {
-      return _i5.Protocol().mapRecordToJson(record);
+      return _i17.Protocol().mapRecordToJson(record);
     } catch (_) {}
     throw Exception('Unsupported record type ${record.runtimeType}');
   }

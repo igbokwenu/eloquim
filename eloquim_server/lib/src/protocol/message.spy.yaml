@@ -2,9 +2,10 @@
 class: Message
 table: messages
 fields:
-  id: int, primary, autoIncrement
-  conversationId: int, relation(parent=Conversation)
-  senderId: int, relation(parent=User)
+  # Relations: Serverpod auto-generates 'int conversationId' and 'int senderId'
+  conversation: Conversation?, relation
+  sender: User?, relation
+
   emojiSequence: List<String>
   rawIntent: String?
   translatedText: String
@@ -17,6 +18,7 @@ fields:
   deliveredAt: DateTime?
   readAt: DateTime?
   isEncrypted: bool, default=false
+
 indexes:
   messages_conversation_idx:
     fields: conversationId, createdAt

@@ -1,0 +1,5 @@
+#eloquim_server/lib/src/protocol/system_notification.spy.yaml
+class: SystemNotification
+fields:
+  type: String
+  conversation: Conversation?

@@ -2,14 +2,15 @@
 class: Conversation
 table: conversations
 fields:
-  id: int, primary, autoIncrement
   type: String, default="p2p"
   title: String?
+  # Stored as JSON in Postgres
   participantIds: List<int>
   startedAt: DateTime, default=now
   lastMessageAt: DateTime, default=now
   chemistryScore: double?
   status: String, default="active"
+
 indexes:
   conversations_participants_idx:
     fields: participantIds

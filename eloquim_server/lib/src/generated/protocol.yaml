@@ -1,3 +1,5 @@
+jwtRefresh:
+  - refreshAccessToken:
 emailIdp:
   - login:
   - startRegistration:
@@ -6,7 +8,30 @@ emailIdp:
   - startPasswordReset:
   - verifyPasswordResetCode:
   - finishPasswordReset:
-jwtRefresh:
-  - refreshAccessToken:
+chat:
+  - sendMessage:
+  - streamChat:
+  - getMessages:
+  - markAsRead:
+conversation:
+  - getConversations:
+  - createConversation:
+  - getConversation:
+  - archiveConversation:
+  - deleteConversation:
+persona:
+  - getOfficialPersonas:
+  - getPersona:
+  - seedOfficialPersonas:
+  - assignPersona:
+recommendation:
+  - getRecommendations:
+user:
+  - getCurrentUser:
+  - updateProfile:
+  - completeTutorial:
+  - getUser:
+  - updateLastSeen:
+  - findMatches:
 greeting:
   - hello:
