@@ -33,9 +33,14 @@ Navigate to the server directory:
 cd my_project_server
 dart run bin/main.dart --apply-migrations
 
-Run
- serverpod generate 
- and 
- serverpod create-migration 
- 
- to create the missing table definitions after a major change.
+# Terminal 1: Start database & server
+cd eloquim_server
+docker-compose up -d
+serverpod generate
+serverpod create-migration
+serverpod run
+
+# Terminal 2: Run Flutter app
+cd eloquim_flutter
+flutter pub get
+flutter run
