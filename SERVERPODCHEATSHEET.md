@@ -32,3 +32,10 @@ Navigate to the server directory:
 ```bash
 cd my_project_server
 dart run bin/main.dart --apply-migrations
+
+Run
+ serverpod generate 
+ and 
+ serverpod create-migration 
+ 
+ to create the missing table definitions after a major change.

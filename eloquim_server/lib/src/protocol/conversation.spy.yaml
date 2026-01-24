@@ -12,9 +12,6 @@ fields:
   status: String, default="active"
 
 indexes:
-  conversations_participants_idx:
-    fields: participantIds
-    type: gin
   conversations_last_message_idx:
     fields: lastMessageAt
     type: btree

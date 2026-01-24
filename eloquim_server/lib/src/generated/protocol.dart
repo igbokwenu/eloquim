@@ -125,19 +125,6 @@ class Protocol extends _i1.SerializationManagerServer {
           isPrimary: true,
         ),
         _i2.IndexDefinition(
-          indexName: 'conversations_participants_idx',
-          tableSpace: null,
-          elements: [
-            _i2.IndexElementDefinition(
-              type: _i2.IndexElementDefinitionType.column,
-              definition: 'participantIds',
-            ),
-          ],
-          type: 'gin',
-          isUnique: false,
-          isPrimary: false,
-        ),
-        _i2.IndexDefinition(
           indexName: 'conversations_last_message_idx',
           tableSpace: null,
           elements: [
