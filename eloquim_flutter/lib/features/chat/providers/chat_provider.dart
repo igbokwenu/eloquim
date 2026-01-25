@@ -1,8 +1,9 @@
-// eloquim_flutter/lib/features/chat/providers/chat_provider.dart
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:eloquim_client/eloquim_client.dart';
 import '../../../core/providers/serverpod_client_provider.dart';
+import '../../../core/services/ai_service.dart';
 
 // Chat state model
 class ChatState {
@@ -38,7 +39,6 @@ class ChatState {
 }
 
 // Current conversation ID provider
-// Current conversation ID provider
 final currentConversationIdProvider =
     NotifierProvider<ConversationIdNotifier, int?>(ConversationIdNotifier.new);
 
@@ -53,6 +53,7 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
   late final Client _client;
   int? _conversationId;
   StreamSubscription? _messageSubscription;
+  final _aiService = AIService();
 
   @override
   Future<ChatState> build() async {
@@ -97,24 +98,32 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
 
     if (user == null) return;
 
+    // Call AI translation service on client
+    final translation = await _aiService.translateEmojis(
+      emojiSequence: emojiOverride ?? [],
+      tone: currentState.currentTone,
+      personaId: user.personaId?.toString() ?? 'default',
+      context: currentState.messages,
+    );
+
     // Optimistic UI update
     final tempMessage = Message(
-      id: -DateTime.now().millisecondsSinceEpoch, // Temporary negative ID
+      id: -DateTime.now().millisecondsSinceEpoch,
       conversationId: _conversationId!,
       senderId: user.id!,
       rawIntent: rawIntent,
       emojiSequence: emojiOverride ?? [],
-      translatedText: rawIntent,
+      translatedText: translation['text'] ?? rawIntent,
       tone: currentState.currentTone,
       personaUsed: user.personaId?.toString() ?? 'default',
-      confidenceScore: 0.0,
+      confidenceScore: (translation['confidence'] as num?)?.toDouble() ?? 0.0,
       createdAt: DateTime.now(),
     );
 
     state = AsyncData(
       currentState.copyWith(
         messages: [...currentState.messages, tempMessage],
-        isLoading: true,
+        isTyping: true,
       ),
     );
 
@@ -127,6 +136,8 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
           emojiSequence: emojiOverride ?? [],
           tone: currentState.currentTone,
           personaId: user.personaId?.toString() ?? 'default',
+          translatedText: translation['text'],
+          confidenceScore: (translation['confidence'] as num?)?.toDouble(),
         ),
       );
 
@@ -138,11 +149,10 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
       state = AsyncData(
         currentState.copyWith(
           messages: updatedMessages,
-          isLoading: false,
+          isTyping: false,
         ),
       );
     } catch (e) {
-      // Remove temp message on error
       final updatedMessages = currentState.messages
           .where((m) => m.id != tempMessage.id)
           .toList();
@@ -150,11 +160,149 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
       state = AsyncData(
         currentState.copyWith(
           messages: updatedMessages,
-          isLoading: false,
+          isTyping: false,
           error: e.toString(),
         ),
       );
     }
+  }
+
+  /// Subscribe to real-time messages
+  void _subscribeToMessages() {
+    if (_conversationId == null) return;
+
+    _messageSubscription = _client.chat
+        .streamChat(_conversationId!)
+        .listen(
+          (message) async {
+            final currentState = state.asData?.value ?? const ChatState();
+
+            if (!currentState.messages.any((m) => m.id == message.id)) {
+              state = AsyncData(
+                currentState.copyWith(
+                  messages: [...currentState.messages, message],
+                ),
+              );
+
+              // Check if we should trigger a bot response
+              final userAsync = ref.read(currentUserProvider);
+              final currentUser = userAsync.asData?.value;
+              // If the message is NOT from the current user, it might be from a bot
+              if (currentUser != null && message.senderId != currentUser.id) {
+                // Check if sender is a bot
+                final sender = await _client.user.getUser(message.senderId);
+                if (sender != null && sender.isBot) {
+                  // Bot already sent a message, we don't need to trigger unless it was AI-driven
+                  // Actually, in our flow, the AI bot responds to the USER's message.
+                }
+              } else if (currentUser != null &&
+                  message.senderId == currentUser.id) {
+                // If message is FROM current user, check if recipient is a bot
+                _triggerBotReplyIfNecessary(message, currentUser);
+              }
+            }
+          },
+          onError: (error) {
+            final currentState = state.asData?.value ?? const ChatState();
+            state = AsyncData(currentState.copyWith(error: error.toString()));
+          },
+        );
+  }
+
+  void _triggerBotReplyIfNecessary(
+    Message lastMessage,
+    User currentUser,
+  ) async {
+    if (_conversationId == null) return;
+
+    try {
+      // Find other participant in the conversation
+      // We can fetch recent messages to find the other sender, OR fetch conversation participants
+      // For now, let's assume we can fetch the other user ID from the conversation
+      // Since we don't have conversation participants easily available in the client generated code right now without a specific endpoint,
+      // let's fetch any message NOT from the current user in this conversation.
+
+      final messages = await _client.chat.getMessages(
+        _conversationId!,
+        limit: 20,
+      );
+      final otherMessage = messages.firstWhere(
+        (m) => m.senderId != currentUser.id,
+        orElse: () => Message(
+          conversationId: _conversationId!,
+          senderId: -1,
+          emojiSequence: [],
+          translatedText: '',
+          tone: 'casual',
+          personaUsed: 'none',
+          confidenceScore: 0.0,
+          createdAt: DateTime.now(),
+        ),
+      );
+
+      if (otherMessage.senderId != -1) {
+        final otherUser = await _client.user.getUser(otherMessage.senderId);
+        if (otherUser != null && otherUser.isBot) {
+          await triggerBotResponse(otherUser);
+        }
+      } else {
+        // If it's a new conversation with a bot (e.g. Adanna tutorial)
+        // We might need to know who the bot is.
+        // Let's assume Adanna is seeded as a user.
+      }
+    } catch (e) {
+      debugPrint('Error in bot reply check: $e');
+    }
+  }
+
+  /// Trigger a bot reply if the recipient is a bot
+  Future<void> triggerBotResponse(User botUser) async {
+    final currentState = state.asData?.value ?? const ChatState();
+    final userAsync = ref.read(currentUserProvider);
+    final currentUser = userAsync.asData?.value;
+    if (currentUser == null) return;
+
+    state = AsyncData(currentState.copyWith(isTyping: true));
+
+    final botReply = await _aiService.generateBotResponse(
+      botUser: botUser,
+      history: currentState.messages,
+      currentUser: currentUser,
+      onToolCall: (name, args) async {
+        switch (name) {
+          case 'getTutorialStatus':
+            return {'hasDoneTutorial': currentUser.hasDoneTutorial};
+          case 'markTutorialFinished':
+            await _client.user.completeTutorial();
+            return {'success': true};
+          case 'navigateToFindMatch':
+            ref.read(botActionProvider.notifier).set('navigateToFindMatch');
+            return {'navigated': true};
+          default:
+            return {'error': 'Unknown tool'};
+        }
+      },
+    );
+
+    if (botReply != null) {
+      try {
+        await _client.chat.sendMessage(
+          SendMessageRequest(
+            conversationId: _conversationId!,
+            rawIntent: botReply.translatedText,
+            emojiSequence: botReply.emojiSequence,
+            tone: 'casual',
+            personaId: botUser.personaId?.toString() ?? 'bot',
+            translatedText: botReply.translatedText,
+            confidenceScore: 1.0,
+          ),
+        );
+      } catch (e) {
+        debugPrint('Error sending bot reply: $e');
+      }
+    }
+
+    state = AsyncData(state.asData!.value.copyWith(isTyping: false));
   }
 
   /// Switch tone (for tone-morphing preview)
@@ -172,36 +320,6 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
     } catch (e) {
       // Silent fail
     }
-  }
-
-  /// Subscribe to real-time messages
-  void _subscribeToMessages() {
-    if (_conversationId == null) return;
-
-    _messageSubscription = _client.chat
-        .streamChat(_conversationId!)
-        .listen(
-          (message) {
-            final currentState = state.asData?.value ?? const ChatState();
-
-            // Avoid duplicates
-            if (!currentState.messages.any((m) => m.id == message.id)) {
-              state = AsyncData(
-                currentState.copyWith(
-                  messages: [...currentState.messages, message],
-                ),
-              );
-            }
-          },
-          onError: (error) {
-            final currentState = state.asData?.value ?? const ChatState();
-            state = AsyncData(
-              currentState.copyWith(
-                error: error.toString(),
-              ),
-            );
-          },
-        );
   }
 
   /// Refresh messages
@@ -224,4 +342,15 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
 // Provider
 final chatProvider = AsyncNotifierProvider.autoDispose<ChatNotifier, ChatState>(
   ChatNotifier.new,
+);
+
+// Bot Actions Provider for UI navigation
+class BotActionNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+  void set(String? value) => state = value;
+}
+
+final botActionProvider = NotifierProvider<BotActionNotifier, String?>(
+  BotActionNotifier.new,
 );

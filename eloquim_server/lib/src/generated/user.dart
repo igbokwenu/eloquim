@@ -31,11 +31,13 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
     DateTime? createdAt,
     DateTime? lastSeen,
     bool? isAnonymous,
+    bool? isBot,
   }) : emojiSignature = emojiSignature ?? '✨🎵💫',
        hasDoneTutorial = hasDoneTutorial ?? false,
        createdAt = createdAt ?? DateTime.now(),
        lastSeen = lastSeen ?? DateTime.now(),
-       isAnonymous = isAnonymous ?? true;
+       isAnonymous = isAnonymous ?? true,
+       isBot = isBot ?? false;
 
   factory User({
     int? id,
@@ -52,6 +54,7 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
     DateTime? createdAt,
     DateTime? lastSeen,
     bool? isAnonymous,
+    bool? isBot,
   }) = _UserImpl;
 
   factory User.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -82,6 +85,7 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['lastSeen']),
       isAnonymous: jsonSerialization['isAnonymous'] as bool?,
+      isBot: jsonSerialization['isBot'] as bool?,
     );
   }
 
@@ -118,6 +122,8 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
 
   bool isAnonymous;
 
+  bool isBot;
+
   @override
   _i1.Table<int?> get table => t;
 
@@ -139,6 +145,7 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
     DateTime? createdAt,
     DateTime? lastSeen,
     bool? isAnonymous,
+    bool? isBot,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -158,6 +165,7 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
       'createdAt': createdAt.toJson(),
       'lastSeen': lastSeen.toJson(),
       'isAnonymous': isAnonymous,
+      'isBot': isBot,
     };
   }
 
@@ -179,6 +187,7 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
       'createdAt': createdAt.toJson(),
       'lastSeen': lastSeen.toJson(),
       'isAnonymous': isAnonymous,
+      'isBot': isBot,
     };
   }
 
@@ -230,6 +239,7 @@ class _UserImpl extends User {
     DateTime? createdAt,
     DateTime? lastSeen,
     bool? isAnonymous,
+    bool? isBot,
   }) : super._(
          id: id,
          authUserId: authUserId,
@@ -245,6 +255,7 @@ class _UserImpl extends User {
          createdAt: createdAt,
          lastSeen: lastSeen,
          isAnonymous: isAnonymous,
+         isBot: isBot,
        );
 
   /// Returns a shallow copy of this [User]
@@ -266,6 +277,7 @@ class _UserImpl extends User {
     DateTime? createdAt,
     DateTime? lastSeen,
     bool? isAnonymous,
+    bool? isBot,
   }) {
     return User(
       id: id is int? ? id : this.id,
@@ -282,6 +294,7 @@ class _UserImpl extends User {
       createdAt: createdAt ?? this.createdAt,
       lastSeen: lastSeen ?? this.lastSeen,
       isAnonymous: isAnonymous ?? this.isAnonymous,
+      isBot: isBot ?? this.isBot,
     );
   }
 }
@@ -353,6 +366,11 @@ class UserUpdateTable extends _i1.UpdateTable<UserTable> {
     table.isAnonymous,
     value,
   );
+
+  _i1.ColumnValue<bool, bool> isBot(bool value) => _i1.ColumnValue(
+    table.isBot,
+    value,
+  );
 }
 
 class UserTable extends _i1.Table<int?> {
@@ -411,6 +429,11 @@ class UserTable extends _i1.Table<int?> {
       this,
       hasDefault: true,
     );
+    isBot = _i1.ColumnBool(
+      'isBot',
+      this,
+      hasDefault: true,
+    );
   }
 
   late final UserUpdateTable updateTable;
@@ -441,6 +464,8 @@ class UserTable extends _i1.Table<int?> {
 
   late final _i1.ColumnBool isAnonymous;
 
+  late final _i1.ColumnBool isBot;
+
   _i2.PersonaTable get persona {
     if (_persona != null) return _persona!;
     _persona = _i1.createRelationTable(
@@ -469,6 +494,7 @@ class UserTable extends _i1.Table<int?> {
     createdAt,
     lastSeen,
     isAnonymous,
+    isBot,
   ];
 
   @override

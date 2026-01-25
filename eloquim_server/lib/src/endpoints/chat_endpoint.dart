@@ -1,10 +1,10 @@
 // eloquim_server/lib/src/endpoints/chat_endpoint.dart
-import 'package:serverpod/serverpod.dart' hide Message; // FIX: Hide Serverpod's internal Message class
+import 'package:serverpod/serverpod.dart'
+    hide Message; // FIX: Hide Serverpod's internal Message class
 import '../generated/protocol.dart';
 import '../services/ai_translation_service.dart';
 
 class ChatEndpoint extends Endpoint {
-  
   /// Send a message with emoji translation
   Future<Message> sendMessage(
     Session session,
@@ -28,14 +28,21 @@ class ChatEndpoint extends Endpoint {
         limit: 6,
       );
 
-      // 3. Call AI translation service
-      final aiService = AITranslationService(session);
-      final translation = await aiService.translateEmojis(
-        emojiSequence: request.emojiSequence,
-        tone: request.tone,
-        personaId: request.personaId,
-        conversationContext: contextMessages.reversed.toList(),
-      );
+      // 3. Call AI translation service (if not already translated by client)
+      String translatedText = request.translatedText ?? '';
+      double confidenceScore = request.confidenceScore ?? 0.0;
+
+      if (translatedText.isEmpty) {
+        final aiService = AITranslationService(session);
+        final translation = await aiService.translateEmojis(
+          emojiSequence: request.emojiSequence,
+          tone: request.tone,
+          personaId: request.personaId,
+          conversationContext: contextMessages.reversed.toList(),
+        );
+        translatedText = translation.text;
+        confidenceScore = translation.confidence;
+      }
 
       // 4. Create message
       final message = Message(
@@ -43,10 +50,10 @@ class ChatEndpoint extends Endpoint {
         senderId: userId,
         emojiSequence: request.emojiSequence,
         rawIntent: request.rawIntent,
-        translatedText: translation.text,
+        translatedText: translatedText,
         tone: request.tone,
         personaUsed: request.personaId,
-        confidenceScore: translation.confidence,
+        confidenceScore: confidenceScore,
         mediaGifUrl: request.mediaGifUrl,
         replyToMsgId: request.replyToMsgId,
         createdAt: DateTime.now(),
@@ -112,7 +119,7 @@ class ChatEndpoint extends Endpoint {
     int messageId,
   ) async {
     await _verifyParticipant(session, conversationId);
-    
+
     final message = await Message.db.findById(session, messageId);
     if (message != null) {
       // Use copyWith for updates
@@ -131,8 +138,11 @@ class ChatEndpoint extends Endpoint {
       throw Exception('Not authenticated');
     }
     final userId = int.parse(authInfo.userIdentifier);
-    
-    final conversation = await Conversation.db.findById(session, conversationId);
+
+    final conversation = await Conversation.db.findById(
+      session,
+      conversationId,
+    );
     if (conversation == null) {
       throw Exception('Conversation not found');
     }
@@ -147,7 +157,10 @@ class ChatEndpoint extends Endpoint {
     Session session,
     int conversationId,
   ) async {
-    final conversation = await Conversation.db.findById(session, conversationId);
+    final conversation = await Conversation.db.findById(
+      session,
+      conversationId,
+    );
     if (conversation != null) {
       final updated = conversation.copyWith(lastMessageAt: DateTime.now());
       await Conversation.db.updateRow(session, updated);

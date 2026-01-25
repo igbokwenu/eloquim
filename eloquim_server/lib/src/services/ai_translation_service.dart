@@ -16,9 +16,13 @@ class TranslationResult {
 
 class AITranslationService {
   final Session session;
-  
-  // You'll need to set this in environment variables
-  static const String _apiKey = String.fromEnvironment('GEMINI_API_KEY', defaultValue: '');
+  // NOTE: Production translation is now handled on the client via Firebase AI
+  // to leverage Firebase Auth/App Check and avoid hardcoding API keys.
+  // This server-side service remains as a fallback.
+  static const String _apiKey = String.fromEnvironment(
+    'GEMINI_API_KEY',
+    defaultValue: '',
+  );
 
   AITranslationService(this.session);
 
@@ -45,8 +49,9 @@ class AITranslationService {
 
       // For V1, we'll use a simple rule-based fallback
       // In production, you'd call Firebase/Gemini API here
-      final translatedText = await _callGeminiAPI(prompt) ?? 
-                             _fallbackTranslation(emojiSequence, tone);
+      final translatedText =
+          await _callGeminiAPI(prompt) ??
+          _fallbackTranslation(emojiSequence, tone);
 
       final confidence = _calculateConfidence(emojiSequence, translatedText);
 
@@ -84,7 +89,7 @@ class AITranslationService {
       );
 
       final response = await _callGeminiAPI(prompt);
-      
+
       if (response != null) {
         return _parseRecommendations(response);
       }
@@ -153,20 +158,22 @@ Format as JSON:
 
     try {
       final response = await http.post(
-        Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=$_apiKey'),
+        Uri.parse(
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=$_apiKey',
+        ),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'contents': [
             {
               'parts': [
-                {'text': prompt}
-              ]
-            }
+                {'text': prompt},
+              ],
+            },
           ],
           'generationConfig': {
             'temperature': 0.7,
             'maxOutputTokens': 200,
-          }
+          },
         }),
       );
 
@@ -183,7 +190,7 @@ Format as JSON:
 
   String _fallbackTranslation(List<String> emojis, String tone) {
     if (emojis.isEmpty) return '';
-    
+
     // Simple emoji-to-text mapping
     final Map<String, String> basicMappings = {
       '👋': 'Hello',
@@ -222,9 +229,12 @@ Format as JSON:
     return text.isEmpty ? emojis.join(' ') : text;
   }
 
-  RecommendationResponse _fallbackRecommendations(String partialText, String tone) {
+  RecommendationResponse _fallbackRecommendations(
+    String partialText,
+    String tone,
+  ) {
     final List<String> singles;
-    
+
     if (tone == 'flirty') {
       singles = ['😍', '😘', '💕', '✨', '🔥', '😉'];
     } else if (tone == 'formal') {
@@ -258,19 +268,25 @@ Format as JSON:
       cleanJson = cleanJson.trim();
 
       final data = jsonDecode(cleanJson);
-      
+
       return RecommendationResponse(
         singles: List<String>.from(data['singles'] ?? []),
-        combos: (data['combos'] as List?)
-            ?.map((c) => EmojiCombo(
-                  emojis: List<String>.from(c['emojis'] ?? []),
-                  meaning: c['meaning'] ?? '',
-                ))
-            .toList() ??
+        combos:
+            (data['combos'] as List?)
+                ?.map(
+                  (c) => EmojiCombo(
+                    emojis: List<String>.from(c['emojis'] ?? []),
+                    meaning: c['meaning'] ?? '',
+                  ),
+                )
+                .toList() ??
             [],
       );
     } catch (e) {
-      session.log('Failed to parse recommendations: $e', level: LogLevel.warning);
+      session.log(
+        'Failed to parse recommendations: $e',
+        level: LogLevel.warning,
+      );
       return _fallbackRecommendations('', 'casual');
     }
   }

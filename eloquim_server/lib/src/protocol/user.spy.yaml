@@ -19,6 +19,7 @@ fields:
   createdAt: DateTime, default=now
   lastSeen: DateTime, default=now
   isAnonymous: bool, default=true
+  isBot: bool, default=false
 
 indexes:
   users_last_seen_idx:

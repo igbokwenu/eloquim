@@ -20,6 +20,8 @@ abstract class SendMessageRequest implements _i1.SerializableModel {
     required this.emojiSequence,
     required this.tone,
     required this.personaId,
+    this.translatedText,
+    this.confidenceScore,
     this.mediaGifUrl,
     this.replyToMsgId,
   });
@@ -30,6 +32,8 @@ abstract class SendMessageRequest implements _i1.SerializableModel {
     required List<String> emojiSequence,
     required String tone,
     required String personaId,
+    String? translatedText,
+    double? confidenceScore,
     String? mediaGifUrl,
     int? replyToMsgId,
   }) = _SendMessageRequestImpl;
@@ -43,6 +47,9 @@ abstract class SendMessageRequest implements _i1.SerializableModel {
       ),
       tone: jsonSerialization['tone'] as String,
       personaId: jsonSerialization['personaId'] as String,
+      translatedText: jsonSerialization['translatedText'] as String?,
+      confidenceScore: (jsonSerialization['confidenceScore'] as num?)
+          ?.toDouble(),
       mediaGifUrl: jsonSerialization['mediaGifUrl'] as String?,
       replyToMsgId: jsonSerialization['replyToMsgId'] as int?,
     );
@@ -58,6 +65,10 @@ abstract class SendMessageRequest implements _i1.SerializableModel {
 
   String personaId;
 
+  String? translatedText;
+
+  double? confidenceScore;
+
   String? mediaGifUrl;
 
   int? replyToMsgId;
@@ -71,6 +82,8 @@ abstract class SendMessageRequest implements _i1.SerializableModel {
     List<String>? emojiSequence,
     String? tone,
     String? personaId,
+    String? translatedText,
+    double? confidenceScore,
     String? mediaGifUrl,
     int? replyToMsgId,
   });
@@ -83,6 +96,8 @@ abstract class SendMessageRequest implements _i1.SerializableModel {
       'emojiSequence': emojiSequence.toJson(),
       'tone': tone,
       'personaId': personaId,
+      if (translatedText != null) 'translatedText': translatedText,
+      if (confidenceScore != null) 'confidenceScore': confidenceScore,
       if (mediaGifUrl != null) 'mediaGifUrl': mediaGifUrl,
       if (replyToMsgId != null) 'replyToMsgId': replyToMsgId,
     };
@@ -103,6 +118,8 @@ class _SendMessageRequestImpl extends SendMessageRequest {
     required List<String> emojiSequence,
     required String tone,
     required String personaId,
+    String? translatedText,
+    double? confidenceScore,
     String? mediaGifUrl,
     int? replyToMsgId,
   }) : super._(
@@ -111,6 +128,8 @@ class _SendMessageRequestImpl extends SendMessageRequest {
          emojiSequence: emojiSequence,
          tone: tone,
          personaId: personaId,
+         translatedText: translatedText,
+         confidenceScore: confidenceScore,
          mediaGifUrl: mediaGifUrl,
          replyToMsgId: replyToMsgId,
        );
@@ -125,6 +144,8 @@ class _SendMessageRequestImpl extends SendMessageRequest {
     List<String>? emojiSequence,
     String? tone,
     String? personaId,
+    Object? translatedText = _Undefined,
+    Object? confidenceScore = _Undefined,
     Object? mediaGifUrl = _Undefined,
     Object? replyToMsgId = _Undefined,
   }) {
@@ -135,6 +156,12 @@ class _SendMessageRequestImpl extends SendMessageRequest {
           emojiSequence ?? this.emojiSequence.map((e0) => e0).toList(),
       tone: tone ?? this.tone,
       personaId: personaId ?? this.personaId,
+      translatedText: translatedText is String?
+          ? translatedText
+          : this.translatedText,
+      confidenceScore: confidenceScore is double?
+          ? confidenceScore
+          : this.confidenceScore,
       mediaGifUrl: mediaGifUrl is String? ? mediaGifUrl : this.mediaGifUrl,
       replyToMsgId: replyToMsgId is int? ? replyToMsgId : this.replyToMsgId,
     );

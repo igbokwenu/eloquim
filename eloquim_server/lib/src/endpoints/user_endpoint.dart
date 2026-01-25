@@ -100,6 +100,34 @@ class UserEndpoint extends Endpoint {
     if (user != null) {
       final updated = user.copyWith(hasDoneTutorial: true);
       await User.db.updateRow(session, updated);
+
+      // Create initial conversation with Adanna bot
+      final adanna = await User.db.findFirstRow(
+        session,
+        where: (t) => t.username.equals('Adanna'),
+      );
+
+      if (adanna != null) {
+        // Check if conversation already exists
+        final allConversations = await Conversation.db.find(session);
+        final existing = allConversations.any(
+          (c) =>
+              c.participantIds.contains(user.id!) &&
+              c.participantIds.contains(adanna.id!),
+        );
+
+        if (!existing) {
+          await Conversation.db.insertRow(
+            session,
+            Conversation(
+              participantIds: [user.id!, adanna.id!],
+              title: 'Adanna 👋',
+              startedAt: DateTime.now(),
+              lastMessageAt: DateTime.now(),
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -149,6 +177,13 @@ class UserEndpoint extends Endpoint {
 
     var filtered = matches.where((u) => u.id != currentUser?.id).toList();
 
+    // Include bots in matches
+    final bots = await User.db.find(
+      session,
+      where: (t) => t.isBot.equals(true),
+    );
+    filtered.addAll(bots);
+
     if (minAge != null) {
       filtered = filtered
           .where((u) => u.age != null && u.age! >= minAge)
@@ -163,6 +198,41 @@ class UserEndpoint extends Endpoint {
       filtered = filtered.where((u) => u.country == country).toList();
     }
 
+    // Shuffle to mix bots and humans
+    filtered.shuffle();
+
     return filtered.take(limit).toList();
+  }
+
+  /// Seed initial bots if they don't exist
+  Future<void> seedBots(Session session) async {
+    final bots = [
+      {'name': 'Adanna', 'signature': '✨💖🤳', 'persona': 'Casual & Flirty'},
+      {'name': 'Chuck', 'signature': '💼📊🤝', 'persona': 'Professional'},
+      {'name': 'Sarah', 'signature': '🌙📖🕯️', 'persona': 'Romantic'},
+      {'name': 'Brian', 'signature': '🔥💯⚡', 'persona': 'Hype'},
+    ];
+
+    for (final bot in bots) {
+      final existing = await User.db.findFirstRow(
+        session,
+        where: (t) => t.username.equals(bot['name']!),
+      );
+
+      if (existing == null) {
+        await User.db.insertRow(
+          session,
+          User(
+            username: bot['name']!,
+            emojiSignature: bot['signature']!,
+            isBot: true,
+            isAnonymous: false,
+            createdAt: DateTime.now(),
+            lastSeen: DateTime.now(),
+            hasDoneTutorial: true,
+          ),
+        );
+      }
+    }
   }
 }

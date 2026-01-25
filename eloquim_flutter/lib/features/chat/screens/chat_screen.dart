@@ -1,6 +1,7 @@
 // eloquim_flutter/lib/features/chat/screens/chat_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../providers/chat_provider.dart';
 import '../widgets/chat_bubble.dart';
 import '../widgets/message_composer.dart';
@@ -28,6 +29,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ref
           .read(currentConversationIdProvider.notifier)
           .set(widget.conversationId);
+    });
+
+    // Listen for bot actions (navigation, etc.)
+    ref.listenManual(botActionProvider, (previous, next) {
+      if (next == 'navigateToFindMatch') {
+        context.push('/find-match');
+        ref.read(botActionProvider.notifier).set(null); // Clear
+      }
     });
   }
 

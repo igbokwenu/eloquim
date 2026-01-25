@@ -12,6 +12,7 @@ import 'src/generated/protocol.dart';
 import 'src/web/routes/app_config_route.dart';
 import 'src/web/routes/root.dart';
 import 'src/endpoints/persona_endpoint.dart';
+import 'src/endpoints/user_endpoint.dart';
 
 // Define SMTP Server globally
 SmtpServer? _smtpServer;
@@ -116,6 +117,11 @@ void run(List<String> args) async {
     final session = await pod.createSession();
     final personaEndpoint = PersonaEndpoint();
     await personaEndpoint.seedOfficialPersonas(session);
+
+    // Seed Bot Users
+    final userEndpoint = UserEndpoint();
+    await userEndpoint.seedBots(session);
+
     await session.close();
     print('Seeding check complete.');
   } catch (e) {
