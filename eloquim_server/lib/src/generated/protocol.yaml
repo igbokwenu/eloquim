@@ -26,6 +26,8 @@ persona:
   - assignPersona:
 recommendation:
   - getRecommendations:
+refreshJwtTokens:
+  - refreshAccessToken:
 user:
   - getCurrentUser:
   - updateProfile:

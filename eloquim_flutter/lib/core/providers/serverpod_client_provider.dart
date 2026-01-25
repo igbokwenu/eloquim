@@ -1,71 +1,53 @@
 import 'dart:async';
-// eloquim_flutter/lib/core/providers/serverpod_client_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:serverpod_flutter/serverpod_flutter.dart';
 import 'package:eloquim_client/eloquim_client.dart';
+import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 
-import 'package:serverpod_auth_shared_flutter/serverpod_auth_shared_flutter.dart';
+// Global client instance to be initialized in main.dart
+late Client globalClient;
 
-// Initialize the Serverpod client
-final serverpodClientProvider = Provider<Client>((ref) {
-  // Replace with your server URL
-  // For local development: 'http://localhost:8080/'
-  // For production: 'https://your-server.com/'
+/// Initializes the Serverpod client and authentication
+Future<void> initializeServerpodClient() async {
   const serverUrl = String.fromEnvironment(
     'SERVER_URL',
     defaultValue: 'http://localhost:8080/',
   );
 
-  return Client(
-    serverUrl,
-  )..connectivityMonitor = FlutterConnectivityMonitor();
-});
+  globalClient = Client(serverUrl)
+    ..connectivityMonitor = FlutterConnectivityMonitor()
+    ..authSessionManager = FlutterAuthSessionManager();
 
-// Session manager provider
-final sessionManagerProvider = Provider<SessionManager>((ref) {
-  final client = ref.watch(serverpodClientProvider);
-  return SessionManager(
-    caller: (client.modules as dynamic).auth,
-  );
+  await globalClient.auth.initialize();
+}
+
+// Provider for the Serverpod client
+final serverpodClientProvider = Provider<Client>((ref) {
+  return globalClient;
 });
 
 // Current user provider
+// Note: This User is the custom User model from eloquim_client, not AuthUser
 final currentUserProvider = StreamProvider<User?>((ref) {
   final client = ref.watch(serverpodClientProvider);
-  final sessionManager = ref.watch(sessionManagerProvider);
-
-  // We need to listen to the auth module's changes.
-  // Since we cast to dynamic, we assume 'auth' exists and has 'authInfoListenable'.
-  final authModule = (client.modules as dynamic).auth;
-
-  // Create a stream that emits when auth info changes.
-  // Note: This is a simplified stream creation.
-  return _authStream(authModule, client);
+  return _authStream(client);
 });
 
-Stream<User?> _authStream(dynamic authModule, Client client) async* {
-  // Emit initial state
-  if (authModule.isSignedIn) {
-    try {
-      yield await client.user.getCurrentUser();
-    } catch (_) {
-      yield null;
-    }
-  } else {
-    yield null;
-  }
-
-  // Monitor changes
-  // Ideally use a stream controller, but here we can use a simple loop or Stream.periodic check if listenable not easily streamable without StreamController boilerplate.
-  // Better: Create a controller.
+Stream<User?> _authStream(Client client) {
   final controller = StreamController<User?>();
+  final authManager = client.authSessionManager as FlutterAuthSessionManager?;
 
-  void listener() async {
-    if (authModule.isSignedIn) {
+  void updateUser() async {
+    if (authManager?.isAuthenticated ?? false) {
       try {
+        // Fetch custom user object from backend
+        // This assumes UserEndpoint exists and has getCurrentUser()
         final user = await client.user.getCurrentUser();
         controller.add(user);
-      } catch (_) {
+      } catch (e) {
+        // If error (e.g. network), we might still be 'signed in' but can't get profile
+        // For now, emit null or maybe retry?
+        print('Error fetching user profile: $e');
         controller.add(null);
       }
     } else {
@@ -73,12 +55,40 @@ Stream<User?> _authStream(dynamic authModule, Client client) async* {
     }
   }
 
-  authModule.authInfoListenable.addListener(listener);
+  // Initial fetch
+  updateUser();
+
+  // Listen for auth changes
+  void listener() {
+    updateUser();
+  }
+
+  authManager?.authInfoListenable.addListener(listener);
 
   controller.onCancel = () {
-    authModule.authInfoListenable.removeListener(listener);
+    authManager?.authInfoListenable.removeListener(listener);
     controller.close();
   };
 
-  yield* controller.stream;
+  return controller.stream;
 }
+
+// Helper provider for authentication state boolean
+final isAuthenticatedProvider = StreamProvider<bool>((ref) {
+  final authManager =
+      globalClient.authSessionManager as FlutterAuthSessionManager?;
+
+  return Stream.multi((controller) {
+    controller.add(authManager?.isAuthenticated ?? false);
+
+    void listener() {
+      controller.add(authManager?.isAuthenticated ?? false);
+    }
+
+    authManager?.authInfoListenable.addListener(listener);
+
+    controller.onCancel = () {
+      authManager?.authInfoListenable.removeListener(listener);
+    };
+  });
+});

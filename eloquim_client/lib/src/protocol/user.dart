@@ -17,6 +17,7 @@ import 'package:eloquim_client/src/protocol/protocol.dart' as _i3;
 abstract class User implements _i1.SerializableModel {
   User._({
     this.id,
+    this.authUserId,
     required this.username,
     this.email,
     this.gender,
@@ -37,6 +38,7 @@ abstract class User implements _i1.SerializableModel {
 
   factory User({
     int? id,
+    _i1.UuidValue? authUserId,
     required String username,
     String? email,
     String? gender,
@@ -54,6 +56,11 @@ abstract class User implements _i1.SerializableModel {
   factory User.fromJson(Map<String, dynamic> jsonSerialization) {
     return User(
       id: jsonSerialization['id'] as int?,
+      authUserId: jsonSerialization['authUserId'] == null
+          ? null
+          : _i1.UuidValueJsonExtension.fromJson(
+              jsonSerialization['authUserId'],
+            ),
       username: jsonSerialization['username'] as String,
       email: jsonSerialization['email'] as String?,
       gender: jsonSerialization['gender'] as String?,
@@ -81,6 +88,8 @@ abstract class User implements _i1.SerializableModel {
   /// database or if it has been fetched from the database. Otherwise,
   /// the id will be null.
   int? id;
+
+  _i1.UuidValue? authUserId;
 
   String username;
 
@@ -111,6 +120,7 @@ abstract class User implements _i1.SerializableModel {
   @_i1.useResult
   User copyWith({
     int? id,
+    _i1.UuidValue? authUserId,
     String? username,
     String? email,
     String? gender,
@@ -129,6 +139,7 @@ abstract class User implements _i1.SerializableModel {
     return {
       '__className__': 'User',
       if (id != null) 'id': id,
+      if (authUserId != null) 'authUserId': authUserId?.toJson(),
       'username': username,
       if (email != null) 'email': email,
       if (gender != null) 'gender': gender,
@@ -155,6 +166,7 @@ class _Undefined {}
 class _UserImpl extends User {
   _UserImpl({
     int? id,
+    _i1.UuidValue? authUserId,
     required String username,
     String? email,
     String? gender,
@@ -169,6 +181,7 @@ class _UserImpl extends User {
     bool? isAnonymous,
   }) : super._(
          id: id,
+         authUserId: authUserId,
          username: username,
          email: email,
          gender: gender,
@@ -189,6 +202,7 @@ class _UserImpl extends User {
   @override
   User copyWith({
     Object? id = _Undefined,
+    Object? authUserId = _Undefined,
     String? username,
     Object? email = _Undefined,
     Object? gender = _Undefined,
@@ -204,6 +218,7 @@ class _UserImpl extends User {
   }) {
     return User(
       id: id is int? ? id : this.id,
+      authUserId: authUserId is _i1.UuidValue? ? authUserId : this.authUserId,
       username: username ?? this.username,
       email: email is String? ? email : this.email,
       gender: gender is String? ? gender : this.gender,

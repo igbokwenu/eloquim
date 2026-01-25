@@ -143,6 +143,8 @@ class TestEndpoints {
 
   late final _RecommendationEndpoint recommendation;
 
+  late final _RefreshJwtTokensEndpoint refreshJwtTokens;
+
   late final _UserEndpoint user;
 
   late final _GreetingEndpoint greeting;
@@ -176,6 +178,10 @@ class _InternalTestEndpoints extends TestEndpoints
       serializationManager,
     );
     recommendation = _RecommendationEndpoint(
+      endpoints,
+      serializationManager,
+    );
+    refreshJwtTokens = _RefreshJwtTokensEndpoint(
       endpoints,
       serializationManager,
     );
@@ -970,6 +976,48 @@ class _RecommendationEndpoint {
                   _localCallContext.arguments,
                 )
                 as _i3.Future<_i9.RecommendationResponse>);
+        return _localReturnValue;
+      } finally {
+        await _localUniqueSession.close();
+      }
+    });
+  }
+}
+
+class _RefreshJwtTokensEndpoint {
+  _RefreshJwtTokensEndpoint(
+    this._endpointDispatch,
+    this._serializationManager,
+  );
+
+  final _i2.EndpointDispatch _endpointDispatch;
+
+  final _i2.SerializationManager _serializationManager;
+
+  _i3.Future<_i4.AuthSuccess> refreshAccessToken(
+    _i1.TestSessionBuilder sessionBuilder, {
+    required String refreshToken,
+  }) async {
+    return _i1.callAwaitableFunctionAndHandleExceptions(() async {
+      var _localUniqueSession =
+          (sessionBuilder as _i1.InternalTestSessionBuilder).internalBuild(
+            endpoint: 'refreshJwtTokens',
+            method: 'refreshAccessToken',
+          );
+      try {
+        var _localCallContext = await _endpointDispatch.getMethodCallContext(
+          createSessionCallback: (_) => _localUniqueSession,
+          endpointPath: 'refreshJwtTokens',
+          methodName: 'refreshAccessToken',
+          parameters: _i1.testObjectToJson({'refreshToken': refreshToken}),
+          serializationManager: _serializationManager,
+        );
+        var _localReturnValue =
+            await (_localCallContext.method.call(
+                  _localUniqueSession,
+                  _localCallContext.arguments,
+                )
+                as _i3.Future<_i4.AuthSuccess>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

@@ -1,5 +1,6 @@
 //eloquim_server/lib/src/endpoints/user_endpoint.dart
 import 'package:serverpod/serverpod.dart';
+import 'package:serverpod_auth_idp_server/core.dart';
 import '../generated/protocol.dart';
 
 class UserEndpoint extends Endpoint {
@@ -7,10 +8,34 @@ class UserEndpoint extends Endpoint {
     final authInfo = await session.authenticated;
     if (authInfo == null) return null;
 
-    // Parse the ID
-    final userId = int.parse(authInfo.userIdentifier);
+    // Get the auth user ID as UuidValue
+    final authUserId = authInfo.authUserId;
 
-    return await User.db.findById(session, userId);
+    // Find user by authUserId
+    var user = await User.db.findFirstRow(
+      session,
+      where: (t) => t.authUserId.equals(authUserId),
+    );
+
+    // If user doesn't exist, create one
+    if (user == null) {
+      user = User(
+        authUserId: authUserId,
+        username: 'User${authUserId.toString().substring(0, 8)}',
+        email: null,
+        gender: null,
+        age: null,
+        country: null,
+        emojiSignature: '✨🎵💫',
+        hasDoneTutorial: false,
+        createdAt: DateTime.now(),
+        lastSeen: DateTime.now(),
+        isAnonymous: false, // Authenticated users are not anonymous
+      );
+      user = await User.db.insertRow(session, user);
+    }
+
+    return user;
   }
 
   Future<User> updateProfile(
@@ -23,25 +48,27 @@ class UserEndpoint extends Endpoint {
     final authInfo = await session.authenticated;
     if (authInfo == null) throw Exception('Not authenticated');
 
-    final userId = int.parse(authInfo.userIdentifier);
+    final authUserId = authInfo.authUserId;
 
-    var user = await User.db.findById(session, userId);
+    var user = await User.db.findFirstRow(
+      session,
+      where: (t) => t.authUserId.equals(authUserId),
+    );
 
     if (user == null) {
       // Create new user
       user = User(
-        id: userId,
-        username: username ?? 'User$userId',
+        authUserId: authUserId,
+        username: username ?? 'User${authUserId.toString().substring(0, 8)}',
         email: null,
         gender: gender,
         age: age,
         country: country,
-        // FIX: Removed "personaId: 0". The field is nullable (int?), so omitting it sets it to null.
         emojiSignature: '✨🎵💫',
         hasDoneTutorial: false,
         createdAt: DateTime.now(),
         lastSeen: DateTime.now(),
-        isAnonymous: true,
+        isAnonymous: false,
       );
       return await User.db.insertRow(session, user);
     } else {
@@ -64,9 +91,12 @@ class UserEndpoint extends Endpoint {
   Future<void> completeTutorial(Session session) async {
     final authInfo = await session.authenticated;
     if (authInfo == null) throw Exception('Not authenticated');
-    final userId = int.parse(authInfo.userIdentifier);
+    final authUserId = authInfo.authUserId;
 
-    final user = await User.db.findById(session, userId);
+    final user = await User.db.findFirstRow(
+      session,
+      where: (t) => t.authUserId.equals(authUserId),
+    );
     if (user != null) {
       final updated = user.copyWith(hasDoneTutorial: true);
       await User.db.updateRow(session, updated);
@@ -80,9 +110,12 @@ class UserEndpoint extends Endpoint {
   Future<void> updateLastSeen(Session session) async {
     final authInfo = await session.authenticated;
     if (authInfo == null) return;
-    final userId = int.parse(authInfo.userIdentifier);
+    final authUserId = authInfo.authUserId;
 
-    final user = await User.db.findById(session, userId);
+    final user = await User.db.findFirstRow(
+      session,
+      where: (t) => t.authUserId.equals(authUserId),
+    );
     if (user != null) {
       final updated = user.copyWith(lastSeen: DateTime.now());
       await User.db.updateRow(session, updated);
@@ -98,7 +131,13 @@ class UserEndpoint extends Endpoint {
   }) async {
     final authInfo = await session.authenticated;
     if (authInfo == null) throw Exception('Not authenticated');
-    final userId = int.parse(authInfo.userIdentifier);
+    final authUserId = authInfo.authUserId;
+
+    // Get current user to exclude from matches
+    final currentUser = await User.db.findFirstRow(
+      session,
+      where: (t) => t.authUserId.equals(authUserId),
+    );
 
     var matches = await User.db.find(
       session,
@@ -108,7 +147,7 @@ class UserEndpoint extends Endpoint {
       orderDescending: true,
     );
 
-    var filtered = matches.where((u) => u.id != userId).toList();
+    var filtered = matches.where((u) => u.id != currentUser?.id).toList();
 
     if (minAge != null) {
       filtered = filtered

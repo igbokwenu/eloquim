@@ -49,7 +49,7 @@ class WelcomeScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 64),
               FilledButton(
-                onPressed: () => context.go('/quiz'),
+                onPressed: () => context.go('/auth'),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 48,
@@ -62,18 +62,19 @@ class WelcomeScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              OutlinedButton(
+              TextButton(
                 onPressed: () {
-                  // TODO: Implement Google Sign In
+                  // TODO: Implement guest mode - skip auth and go to quiz
+                  context.go('/quiz');
                 },
-                style: OutlinedButton.styleFrom(
+                style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 48,
                     vertical: 16,
                   ),
                 ),
                 child: const Text(
-                  'Sign in with Google',
+                  'Continue as Guest',
                   style: TextStyle(fontSize: 16),
                 ),
               ),

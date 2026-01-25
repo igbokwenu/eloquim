@@ -2,6 +2,9 @@
 class: User
 table: users
 fields:
+  # Link to Serverpod auth user (null for guest users)
+  authUserId: UuidValue?
+
   username: String
   email: String?
   gender: String?
@@ -24,3 +27,6 @@ indexes:
   users_email_idx:
     fields: email
     unique: false
+  users_auth_user_id_idx:
+    fields: authUserId
+    unique: true

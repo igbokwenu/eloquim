@@ -18,6 +18,7 @@ import 'package:eloquim_server/src/generated/protocol.dart' as _i3;
 abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
   User._({
     this.id,
+    this.authUserId,
     required this.username,
     this.email,
     this.gender,
@@ -38,6 +39,7 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
 
   factory User({
     int? id,
+    _i1.UuidValue? authUserId,
     required String username,
     String? email,
     String? gender,
@@ -55,6 +57,11 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
   factory User.fromJson(Map<String, dynamic> jsonSerialization) {
     return User(
       id: jsonSerialization['id'] as int?,
+      authUserId: jsonSerialization['authUserId'] == null
+          ? null
+          : _i1.UuidValueJsonExtension.fromJson(
+              jsonSerialization['authUserId'],
+            ),
       username: jsonSerialization['username'] as String,
       email: jsonSerialization['email'] as String?,
       gender: jsonSerialization['gender'] as String?,
@@ -84,6 +91,8 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
 
   @override
   int? id;
+
+  _i1.UuidValue? authUserId;
 
   String username;
 
@@ -117,6 +126,7 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
   @_i1.useResult
   User copyWith({
     int? id,
+    _i1.UuidValue? authUserId,
     String? username,
     String? email,
     String? gender,
@@ -135,6 +145,7 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
     return {
       '__className__': 'User',
       if (id != null) 'id': id,
+      if (authUserId != null) 'authUserId': authUserId?.toJson(),
       'username': username,
       if (email != null) 'email': email,
       if (gender != null) 'gender': gender,
@@ -155,6 +166,7 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
     return {
       '__className__': 'User',
       if (id != null) 'id': id,
+      if (authUserId != null) 'authUserId': authUserId?.toJson(),
       'username': username,
       if (email != null) 'email': email,
       if (gender != null) 'gender': gender,
@@ -205,6 +217,7 @@ class _Undefined {}
 class _UserImpl extends User {
   _UserImpl({
     int? id,
+    _i1.UuidValue? authUserId,
     required String username,
     String? email,
     String? gender,
@@ -219,6 +232,7 @@ class _UserImpl extends User {
     bool? isAnonymous,
   }) : super._(
          id: id,
+         authUserId: authUserId,
          username: username,
          email: email,
          gender: gender,
@@ -239,6 +253,7 @@ class _UserImpl extends User {
   @override
   User copyWith({
     Object? id = _Undefined,
+    Object? authUserId = _Undefined,
     String? username,
     Object? email = _Undefined,
     Object? gender = _Undefined,
@@ -254,6 +269,7 @@ class _UserImpl extends User {
   }) {
     return User(
       id: id is int? ? id : this.id,
+      authUserId: authUserId is _i1.UuidValue? ? authUserId : this.authUserId,
       username: username ?? this.username,
       email: email is String? ? email : this.email,
       gender: gender is String? ? gender : this.gender,
@@ -272,6 +288,13 @@ class _UserImpl extends User {
 
 class UserUpdateTable extends _i1.UpdateTable<UserTable> {
   UserUpdateTable(super.table);
+
+  _i1.ColumnValue<_i1.UuidValue, _i1.UuidValue> authUserId(
+    _i1.UuidValue? value,
+  ) => _i1.ColumnValue(
+    table.authUserId,
+    value,
+  );
 
   _i1.ColumnValue<String, String> username(String value) => _i1.ColumnValue(
     table.username,
@@ -335,6 +358,10 @@ class UserUpdateTable extends _i1.UpdateTable<UserTable> {
 class UserTable extends _i1.Table<int?> {
   UserTable({super.tableRelation}) : super(tableName: 'users') {
     updateTable = UserUpdateTable(this);
+    authUserId = _i1.ColumnUuid(
+      'authUserId',
+      this,
+    );
     username = _i1.ColumnString(
       'username',
       this,
@@ -388,6 +415,8 @@ class UserTable extends _i1.Table<int?> {
 
   late final UserUpdateTable updateTable;
 
+  late final _i1.ColumnUuid authUserId;
+
   late final _i1.ColumnString username;
 
   late final _i1.ColumnString email;
@@ -428,6 +457,7 @@ class UserTable extends _i1.Table<int?> {
   @override
   List<_i1.Column> get columns => [
     id,
+    authUserId,
     username,
     email,
     gender,
