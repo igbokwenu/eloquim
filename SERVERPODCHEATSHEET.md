@@ -81,3 +81,9 @@ zsh
 cd eloquim_server
 serverpod generate
 Do this whenever you add an Endpoint or Model property.
+
+serverpod generate
+serverpod create -migration
+serverpod create -migration --force
+
+flutter run -d chrome

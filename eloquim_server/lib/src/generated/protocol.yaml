@@ -1,5 +1,3 @@
-jwtRefresh:
-  - refreshAccessToken:
 emailIdp:
   - login:
   - startRegistration:
