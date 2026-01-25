@@ -79,6 +79,18 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 child: EmailSignInWidget(
                   client: client,
                   startScreen: EmailFlowScreen.login,
+                  onTermsAndConditionsPressed: () {
+                    // TODO: Show Terms and Conditions
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Terms and Conditions')),
+                    );
+                  },
+                  onPrivacyPolicyPressed: () {
+                    // TODO: Show Privacy Policy
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Privacy Policy')),
+                    );
+                  },
                   onAuthenticated: () {
                     // After authentication, proceed to quiz
                     // Don't navigate here - let the router handle it

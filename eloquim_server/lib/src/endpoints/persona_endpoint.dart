@@ -1,5 +1,6 @@
 // eloquim_server/lib/src/endpoints/persona_endpoint.dart
 import 'package:serverpod/serverpod.dart';
+import 'package:serverpod_auth_idp_server/core.dart';
 import '../generated/protocol.dart';
 
 class PersonaEndpoint extends Endpoint {
@@ -62,10 +63,13 @@ class PersonaEndpoint extends Endpoint {
   Future<void> assignPersona(Session session, int personaId) async {
     final authInfo = await session.authenticated;
     if (authInfo == null) throw Exception('Not authenticated');
+    final authUserId = authInfo.authUserId;
 
-    final userId = int.parse(authInfo.userIdentifier);
+    var user = await User.db.findFirstRow(
+      session,
+      where: (t) => t.authUserId.equals(authUserId),
+    );
 
-    final user = await User.db.findById(session, userId);
     if (user != null) {
       final persona = await Persona.db.findById(session, personaId);
 

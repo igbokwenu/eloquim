@@ -34,6 +34,16 @@ void run(List<String> args) async {
 
   // 2. INITIALIZE AUTH
   pod.initializeAuthServices(
+    userProfileConfig: UserProfileConfig(
+      onAfterUserProfileCreated:
+          (session, userProfile, {required transaction}) async {
+            await AuthServices.instance.userProfiles.setDefaultUserImage(
+              session,
+              userProfile.authUserId,
+              transaction: transaction,
+            );
+          },
+    ),
     tokenManagerBuilders: [
       JwtConfigFromPasswords(),
     ],
