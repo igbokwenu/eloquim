@@ -11,7 +11,7 @@ late Client globalClient;
 Future<void> initializeServerpodClient() async {
   const serverUrl = String.fromEnvironment(
     'SERVER_URL',
-    defaultValue: 'http://localhost:8080/',
+    defaultValue: 'http://127.0.0.1:8080/',
   );
 
   globalClient = Client(serverUrl)

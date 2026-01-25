@@ -18,95 +18,101 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 40),
-              // App branding
-              const Text(
-                '✨💬✨',
-                style: TextStyle(fontSize: 60),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Welcome to Eloquim',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Create an account to get started',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 40),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 500),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 40),
+                  // App branding
+                  const Text(
+                    '✨💬✨',
+                    style: TextStyle(fontSize: 60),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Welcome to Eloquim',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Create an account to get started',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 40),
 
-              // Email authentication widget
-              Theme(
-                data: Theme.of(context).copyWith(
-                  inputDecorationTheme: InputDecorationTheme(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    filled: true,
-                    fillColor: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.grey[850]
-                        : Colors.grey[100],
-                  ),
-                  elevatedButtonTheme: ElevatedButtonThemeData(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  // Email authentication widget
+                  Theme(
+                    data: Theme.of(context).copyWith(
+                      inputDecorationTheme: InputDecorationTheme(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        filled: true,
+                        fillColor:
+                            Theme.of(context).brightness == Brightness.dark
+                            ? Colors.grey[850]
+                            : Colors.grey[100],
+                      ),
+                      elevatedButtonTheme: ElevatedButtonThemeData(
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                      textButtonTheme: TextButtonThemeData(
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
                       ),
                     ),
-                  ),
-                  textButtonTheme: TextButtonThemeData(
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: EmailSignInWidget(
+                      client: client,
+                      startScreen: EmailFlowScreen.login,
+                      onTermsAndConditionsPressed: () {
+                        // TODO: Show Terms and Conditions
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Terms and Conditions')),
+                        );
+                      },
+                      onPrivacyPolicyPressed: () {
+                        // TODO: Show Privacy Policy
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Privacy Policy')),
+                        );
+                      },
+                      onAuthenticated: () {
+                        // After authentication, proceed to quiz
+                        // Don't navigate here - let the router handle it
+                        // The router will detect authentication and redirect appropriately
+                      },
+                      onError: (error) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Error: $error'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      },
                     ),
                   ),
-                ),
-                child: EmailSignInWidget(
-                  client: client,
-                  startScreen: EmailFlowScreen.login,
-                  onTermsAndConditionsPressed: () {
-                    // TODO: Show Terms and Conditions
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Terms and Conditions')),
-                    );
-                  },
-                  onPrivacyPolicyPressed: () {
-                    // TODO: Show Privacy Policy
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Privacy Policy')),
-                    );
-                  },
-                  onAuthenticated: () {
-                    // After authentication, proceed to quiz
-                    // Don't navigate here - let the router handle it
-                    // The router will detect authentication and redirect appropriately
-                  },
-                  onError: (error) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Error: $error'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  },
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
