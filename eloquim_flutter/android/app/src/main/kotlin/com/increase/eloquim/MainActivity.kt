@@ -1,4 +1,4 @@
-package com.example.eloquim_flutter
+package com.increase.eloquim
 
 import io.flutter.embedding.android.FlutterActivity
 

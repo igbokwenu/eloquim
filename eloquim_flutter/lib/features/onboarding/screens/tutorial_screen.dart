@@ -16,14 +16,16 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
   final List<TutorialStep> _steps = [
     TutorialStep(
       title: 'Meet Adanna 👋',
-      description: 'Hi! I\'m Adanna, your guide to Eloquim. Let me show you how to speak in emoji!',
+      description:
+          'Hi! I\'m Adanna, your guide to Eloquim. Let me show you how to speak in emoji!',
       demoEmoji: '👋😊',
       demoText: 'Hello! Nice to meet you!',
       instruction: 'This is how emojis translate to text',
     ),
     TutorialStep(
       title: 'Choose Your Tone 🎨',
-      description: 'The same emojis can mean different things based on your tone.',
+      description:
+          'The same emojis can mean different things based on your tone.',
       demoEmoji: '🔥',
       demoText: 'That\'s fire!',
       instruction: 'Swipe the tone selector to see how it changes',
@@ -53,7 +55,7 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
     try {
       final client = ref.read(serverpodClientProvider);
       await client.user.completeTutorial();
-      
+
       if (mounted) {
         context.go('/conversations');
       }
@@ -91,7 +93,7 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
                 value: (_currentStep + 1) / _steps.length,
               ),
               const SizedBox(height: 32),
-              
+
               // Step content
               Expanded(
                 child: Column(
@@ -107,7 +109,7 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Description
                     Text(
                       step.description,
@@ -115,7 +117,7 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 48),
-                    
+
                     // Demo message bubble
                     GestureDetector(
                       onLongPress: _currentStep == 2
@@ -126,11 +128,15 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
                                   title: const Text('👻 Ghost Translation'),
                                   content: Column(
                                     mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       _buildDetailRow('Emojis', step.demoEmoji),
                                       const SizedBox(height: 8),
-                                      _buildDetailRow('Translated', step.demoText),
+                                      _buildDetailRow(
+                                        'Translated',
+                                        step.demoText,
+                                      ),
                                       const SizedBox(height: 8),
                                       _buildDetailRow('Tone', 'Casual'),
                                       const SizedBox(height: 8),
@@ -164,12 +170,17 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
                           children: [
                             Text(
                               step.demoEmoji,
-                              style: const TextStyle(fontSize: 48),
+                              style: const TextStyle(
+                                fontSize: 48,
+                              ),
                             ),
                             const SizedBox(height: 12),
                             Text(
                               step.demoText,
-                              style: const TextStyle(fontSize: 18),
+                              style: const TextStyle(
+                                fontSize: 18,
+                                color: Colors.black,
+                              ),
                               textAlign: TextAlign.center,
                             ),
                           ],
@@ -177,7 +188,7 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    
+
                     // Instruction
                     Container(
                       padding: const EdgeInsets.all(16),
@@ -192,7 +203,10 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
                           Expanded(
                             child: Text(
                               step.instruction,
-                              style: const TextStyle(fontSize: 14),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.black,
+                              ),
                             ),
                           ),
                         ],
@@ -201,7 +215,7 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
                   ],
                 ),
               ),
-              
+
               // Next button
               FilledButton(
                 onPressed: _nextStep,
@@ -228,7 +242,9 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
           width: 90,
           child: Text(
             '$label:',
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         Expanded(child: Text(value)),

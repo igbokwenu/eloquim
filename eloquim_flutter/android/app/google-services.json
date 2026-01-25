@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "882377029666",
+    "project_id": "officialeloquim",
+    "storage_bucket": "officialeloquim.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:882377029666:android:f9cf47ec7e19567fffb27b",
+        "android_client_info": {
+          "package_name": "com.example.eloquim_flutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwUJ0QlKwmVavw1Hd_nIzHpM3JoYTEnqQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:882377029666:android:77ea56c07cf0d0e7ffb27b",
+        "android_client_info": {
+          "package_name": "com.increase.eloquim"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAwUJ0QlKwmVavw1Hd_nIzHpM3JoYTEnqQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
