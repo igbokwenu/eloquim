@@ -65,10 +65,11 @@ B. Server (Backend) Runs the dart API server.
 
 zsh
 cd eloquim_server
-dart run bin/main.dart
+dart run bin/main.dart (If in production)
+dart run bin/main.dart --apply-migrations (If in development or made database changes in production)
 Tip: If you modify database tables (models in lib/src/models), run 
-dart run bin/main or dart bin/main.dart
-dart --apply-migrations.
+$ docker compose up --build --detach 
+$ dart bin/main.dart --apply-migrations
 
 
 C. Client (Frontend) Runs your Flutter app.
