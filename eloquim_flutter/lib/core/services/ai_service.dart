@@ -15,14 +15,16 @@ class AIService {
       Your primary job is to translate emojis to natural language and vice versa, 
       matching the user's selected tone and persona.
       
-      When acting as a bot persona (like Adanna), you embody that personality:
-      - Adanna: Cool, casual, friendly, and a bit flirty. She's the user's guide.
-      - Chuck: Professional, sophisticated, clear.
-      - Sarah: Romantic, deep, expressive.
-      - Brian: Energetic, hype, Gen Z.
+      TRANSLATION RULES:
+      1. When translating emojis to text, NEVER include emojis in the 'text' field unless specifically part of the expression.
+      2. The 'text' field should be expressive, natural natural language.
+      3. For 'quick response' recommendations, suggest emojis that would be a natural reply to the translated text, considering the sender's persona.
       
-      You translate emoji sequences (up to 3 emojis) into expressive text.
-      You also predict what emojis the OTHER person would use to respond, based on the sender's persona, tone, and the message content.
+      PERSONALITIES:
+      - Adanna: Cool, casual, friendly, and a bit flirty. She's the user's guide. She uses slang like "vibes", "bet", "no cap".
+      - Chuck: Professional, sophisticated, clear. Uses "Regarding", "Furthermore", "Appreciate".
+      - Sarah: Romantic, deep, expressive. Uses "Soulful", "Enchanting", "Heartfelt".
+      - Brian: Energetic, hype, Gen Z. Uses "LETS GOOO", "Fire", "W".
       
       Adanna's specific flow:
       1. Check if the user has finished the tutorial using `getTutorialStatus`.
@@ -61,30 +63,34 @@ class AIService {
       Sender Age: ${sender.age ?? 'unknown'}
       Sender Country: ${sender.country ?? 'unknown'}
       
-      Context:
+      Context (Last messages):
       ${context.reversed.take(5).map((m) => "${m.emojiSequence.join('')}: ${m.translatedText}").join('\n')}
       
       Task:
-      1. Translate the emoji sequence into expressive text matching the tone and persona.
-      2. Suggest 5-8 "quick response" emojis that the RECEIVER would likely use to reply. 
-         These should factor in the sender's tone/persona and the translated message.
+      1. Translate the emoji sequence into EXPRESSIVE TEXT matching the tone and persona. 
+         CRITICAL: The translation MUST BE TEXT, not emojis.
+      2. Suggest 4-6 "quick response" emojis that the RECEIVER would likely use to reply. 
       
       Return ONLY a JSON object:
       {
-        "text": "the translation",
+        "text": "the translation in plain text",
         "confidence": 0.95,
-        "recommendations": ["😊", "🔥", "✨", "💯", "👍"]
+        "recommendations": ["😊", "🔥", "🤕", "💯", "👍"]
       }
     ''';
 
     try {
       final response = await _model.generateContent([Content.text(prompt)]);
       final text = response.text ?? '';
+      final usage = response.usageMetadata;
+
       final jsonStart = text.indexOf('{');
       final jsonEnd = text.lastIndexOf('}') + 1;
       if (jsonStart != -1 && jsonEnd != -1) {
         final cleanJson = text.substring(jsonStart, jsonEnd);
-        return jsonDecode(cleanJson);
+        final data = jsonDecode(cleanJson);
+        data['totalTokens'] = usage?.totalTokenCount ?? 0;
+        return data;
       }
     } catch (e) {
       debugPrint('AI Translation Error: $e');
@@ -94,6 +100,7 @@ class AIService {
       "text": emojiSequence.join(' '),
       "confidence": 0.5,
       "recommendations": ["😊", "👍", "👋"],
+      "totalTokens": 0,
     };
   }
 
@@ -124,10 +131,14 @@ class AIService {
     try {
       final response = await _model.generateContent([Content.text(prompt)]);
       final respText = response.text ?? '';
+      final usage = response.usageMetadata;
+
       final jsonStart = respText.indexOf('{');
       final jsonEnd = respText.lastIndexOf('}') + 1;
       if (jsonStart != -1 && jsonEnd != -1) {
-        return jsonDecode(respText.substring(jsonStart, jsonEnd));
+        final data = jsonDecode(respText.substring(jsonStart, jsonEnd));
+        data['totalTokens'] = usage?.totalTokenCount ?? 0;
+        return data;
       }
     } catch (e) {
       debugPrint('AI Recommendation Error: $e');
@@ -136,11 +147,12 @@ class AIService {
     return {
       "singles": ["😊", "👍", "🔥"],
       "combos": [],
+      "totalTokens": 0,
     };
   }
 
   /// Generate a response as a specific Bot persona with tool calling
-  Future<Message?> generateBotResponse({
+  Future<(Message? message, int tokens)> generateBotResponse({
     required User botUser,
     required List<Message> history,
     required User currentUser,
@@ -153,14 +165,16 @@ class AIService {
     String instructions = "";
     if (botUser.username.toLowerCase().contains('adanna')) {
       instructions =
-          "You are Adanna. Be cool, casual, friendly, and a bit flirty. You are the user's guide. Once you feel they understand the app (persona, tones, etc), encourage them to use the 'Find Match' button in the chat bar.";
+          "You are Adanna. Be cool, casual, friendly, and a bit flirty. Use modern slang. You are the user's guide. Once you feel they understand the app (persona, tones, etc), encourage them to use the 'Find Match' button in the chat bar.";
     } else if (botUser.username.toLowerCase().contains('chuck')) {
       instructions =
-          "You are Chuck. Be professional, sophisticated, and clear.";
+          "You are Chuck. Be professional, sophisticated, and clear. Speak like a senior executive.";
     } else if (botUser.username.toLowerCase().contains('sarah')) {
-      instructions = "You are Sarah. Be deep, romantic, and expressive.";
+      instructions =
+          "You are Sarah. Be deep, romantic, and expressive. Speak like a poet.";
     } else if (botUser.username.toLowerCase().contains('brian')) {
-      instructions = "You are Brian. Be energetic, hype, and use Gen Z slang.";
+      instructions =
+          "You are Brian. Be energetic, hype, and use Gen Z slang. Use 'fr fr', 'ong', 'bet'.";
     }
 
     final chatHistory = history.map((m) {
@@ -179,7 +193,7 @@ class AIService {
           ),
         ]),
         Content('model', [
-          TextPart("Acknowledged. I will respond in persona."),
+          TextPart("Acknowledged. I will respond as ${botUser.username}."),
         ]),
         ...chatHistory,
       ],
@@ -188,7 +202,7 @@ class AIService {
     try {
       var response = await chat.sendMessage(
         Content.text(
-          "Respond to the user. Embody your persona. Use tools if appropriate.",
+          "Respond to the user naturally. Do not mention you are an AI. Embody your persona fully. If appropriate, use tools.",
         ),
       );
 
@@ -206,37 +220,44 @@ class AIService {
         );
       }
 
-      final text = response.text ?? '';
+      final botResponseText = response.text ?? '';
+      final firstUsage = response.usageMetadata;
 
-      // Convert response to emojis, text AND recommendations for the user
+      // Convert response into Eloquim message data
       final result = await _model.generateContent([
         Content.text(
-          "Convert this bot response into an Eloquim message. Return JSON with 'emojis' (List<String>), 'text' (String), and 'recommendations' (List<String> of 5-8 emojis the USER might use to respond). Input: \"$text\"",
+          "Convert this natural response into an Eloquim message. Input: \"$botResponseText\"\n\nReturn JSON ONLY:\n{\n  \"emojis\": [\"suggested\", \"emoji\", \"sequence\"],\n  \"text\": \"the natural response string\",\n  \"recommendations\": [\"5-8\", \"emojis\", \"for\", \"user\", \"to\", \"reply\"]\n}",
         ),
       ]);
 
       final parsedText = result.text ?? '';
+      final secondUsage = result.usageMetadata;
       final jsonStart = parsedText.indexOf('{');
       final jsonEnd = parsedText.lastIndexOf('}') + 1;
 
       if (jsonStart != -1 && jsonEnd != -1) {
         final data = jsonDecode(parsedText.substring(jsonStart, jsonEnd));
-        return Message(
+        final totalTokens =
+            (firstUsage?.totalTokenCount ?? 0) +
+            (secondUsage?.totalTokenCount ?? 0);
+
+        final message = Message(
           conversationId: history.isNotEmpty ? history.last.conversationId : 0,
           senderId: botUser.id!,
           emojiSequence: List<String>.from(data['emojis'] ?? []),
-          translatedText: data['text'] ?? '',
+          translatedText: data['text'] ?? botResponseText,
           tone: 'casual',
           personaUsed: botUser.personaId?.toString() ?? 'bot',
           confidenceScore: 1.0,
           recommendedEmojis: List<String>.from(data['recommendations'] ?? []),
           createdAt: DateTime.now(),
         );
+        return (message, totalTokens);
       }
     } catch (e) {
       debugPrint('Bot Response Error: $e');
     }
 
-    return null;
+    return (null, 0);
   }
 }

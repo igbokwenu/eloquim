@@ -1,0 +1,8 @@
+class: TokenLog
+table: token_logs
+fields:
+  userId: int
+  tokenCount: int
+  estimatedCost: double
+  apiCallType: String # e.g., 'translation', 'bot_response', 'recommendation'
+  timestamp: DateTime, default=now

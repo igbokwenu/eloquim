@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/chat_provider.dart';
 import '../widgets/chat_bubble.dart';
 import '../widgets/message_composer.dart';
+import '../../../shared/widgets/token_usage_bottom_sheet.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   final int conversationId;
@@ -65,9 +66,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.info_outline),
-            onPressed: () {
-              // Show conversation info
-            },
+            onPressed: () => TokenUsageBottomSheet.show(context),
           ),
         ],
       ),

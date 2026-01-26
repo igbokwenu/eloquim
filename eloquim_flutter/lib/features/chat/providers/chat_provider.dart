@@ -128,7 +128,6 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
     );
 
     try {
-      // Send to server
       final sentMessage = await _client.chat.sendMessage(
         SendMessageRequest(
           conversationId: _conversationId!,
@@ -143,6 +142,18 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
           ),
         ),
       );
+
+      // Log token usage
+      if (translation['totalTokens'] != null &&
+          translation['totalTokens'] > 0) {
+        unawaited(
+          _client.user.logTokenUsage(
+            userId: user.id!,
+            tokenCount: translation['totalTokens'],
+            apiCallType: 'translation',
+          ),
+        );
+      }
 
       // Replace temp message with server response
       final updatedMessages =
@@ -244,7 +255,7 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
 
     state = AsyncData(currentState.copyWith(isTyping: true));
 
-    final botReply = await _aiService.generateBotResponse(
+    final (botReply, tokens) = await _aiService.generateBotResponse(
       botUser: botUser,
       history: currentState.messages,
       currentUser: currentUser,
@@ -278,6 +289,16 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
             recommendedEmojis: botReply.recommendedEmojis,
           ),
         );
+
+        if (tokens > 0) {
+          unawaited(
+            _client.user.logTokenUsage(
+              userId: currentUser.id!,
+              tokenCount: tokens,
+              apiCallType: 'bot_response',
+            ),
+          );
+        }
       } catch (e) {
         debugPrint('Error sending bot reply: $e');
       }

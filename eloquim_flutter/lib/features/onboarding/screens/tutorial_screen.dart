@@ -57,6 +57,10 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
       await client.user.completeTutorial();
 
       if (mounted) {
+        // Invalidate current user to refresh their state (hasDoneTutorial = true)
+        ref.invalidate(currentUserProvider);
+        // Wait for the next value from the stream to ensure it's updated
+        await ref.read(currentUserProvider.future);
         context.go('/conversations');
       }
     } catch (e) {

@@ -726,6 +726,46 @@ class Endpoints extends _i1.EndpointDispatch {
               ) async =>
                   (endpoints['user'] as _i8.UserEndpoint).seedBots(session),
         ),
+        'logTokenUsage': _i1.MethodConnector(
+          name: 'logTokenUsage',
+          params: {
+            'userId': _i1.ParameterDescription(
+              name: 'userId',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+            'tokenCount': _i1.ParameterDescription(
+              name: 'tokenCount',
+              type: _i1.getType<int>(),
+              nullable: false,
+            ),
+            'apiCallType': _i1.ParameterDescription(
+              name: 'apiCallType',
+              type: _i1.getType<String>(),
+              nullable: false,
+            ),
+          },
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['user'] as _i8.UserEndpoint).logTokenUsage(
+                session,
+                userId: params['userId'],
+                tokenCount: params['tokenCount'],
+                apiCallType: params['apiCallType'],
+              ),
+        ),
+        'getTokenUsageInfo': _i1.MethodConnector(
+          name: 'getTokenUsageInfo',
+          params: {},
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['user'] as _i8.UserEndpoint)
+                  .getTokenUsageInfo(session),
+        ),
       },
     );
     connectors['greeting'] = _i1.EndpointConnector(

@@ -35,5 +35,7 @@ user:
   - findMatches:
   - deleteAccount:
   - seedBots:
+  - logTokenUsage:
+  - getTokenUsageInfo:
 greeting:
   - hello:

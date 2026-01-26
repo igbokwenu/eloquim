@@ -119,8 +119,9 @@ Translate this emoji sequence into natural language that:
 2. Considers the conversation context
 3. Captures the emotional intent behind the emojis
 4. Sounds natural and authentic
+5. DOES NOT include emojis in the translation unless specifically required by the tone.
 
-Return ONLY the translated text, nothing else.''';
+Return ONLY the translated text, nothing else. No emojis included by default.''';
   }
 
   String _buildRecommendationPrompt({

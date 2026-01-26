@@ -28,6 +28,7 @@ class UserEndpoint extends Endpoint {
         country: null,
         emojiSignature: '✨🎵💫',
         hasDoneTutorial: false,
+        totalTokenCount: 0,
         createdAt: DateTime.now(),
         lastSeen: DateTime.now(),
         isAnonymous: false, // Authenticated users are not anonymous
@@ -284,5 +285,72 @@ class UserEndpoint extends Endpoint {
         );
       }
     }
+  }
+
+  /// Logs token usage for a user
+  Future<void> logTokenUsage(
+    Session session, {
+    required int userId,
+    required int tokenCount,
+    required String apiCallType,
+  }) async {
+    final user = await User.db.findById(session, userId);
+    if (user != null) {
+      // 1. Update user total
+      final updatedUser = user.copyWith(
+        totalTokenCount: user.totalTokenCount + tokenCount,
+      );
+      await User.db.updateRow(session, updatedUser);
+
+      // 2. Create log entry
+      // Estimated cost: $0.01 per 1000 tokens (simplified)
+      final estimatedCost = (tokenCount / 1000) * 0.01;
+
+      await TokenLog.db.insertRow(
+        session,
+        TokenLog(
+          userId: userId,
+          tokenCount: tokenCount,
+          estimatedCost: estimatedCost,
+          apiCallType: apiCallType,
+          timestamp: DateTime.now(),
+        ),
+      );
+    }
+  }
+
+  /// Gets token usage info for the current user
+  Future<Map<String, dynamic>> getTokenUsageInfo(Session session) async {
+    final authInfo = await session.authenticated;
+    if (authInfo == null) throw Exception('Not authenticated');
+
+    final user = await User.db.findFirstRow(
+      session,
+      where: (t) => t.authUserId.equals(authInfo.authUserId),
+    );
+    if (user == null) throw Exception('User not found');
+
+    // Get last 5 logs
+    final logs = await TokenLog.db.find(
+      session,
+      where: (t) => t.userId.equals(user.id!),
+      orderBy: (t) => t.timestamp,
+      orderDescending: true,
+      limit: 5,
+    );
+
+    return {
+      'totalTokens': user.totalTokenCount,
+      'lastCalls': logs
+          .map(
+            (l) => {
+              'tokens': l.tokenCount,
+              'cost': l.estimatedCost,
+              'type': l.apiCallType,
+              'time': l.timestamp.toIso8601String(),
+            },
+          )
+          .toList(),
+    };
   }
 }

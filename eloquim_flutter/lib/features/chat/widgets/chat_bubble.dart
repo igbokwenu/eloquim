@@ -42,15 +42,6 @@ class ChatBubble extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Emoji sequence
-              if (message.emojiSequence.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Text(
-                    message.emojiSequence.join(' '),
-                    style: const TextStyle(fontSize: 28),
-                  ),
-                ),
               // Translated text
               Text(
                 message.translatedText,

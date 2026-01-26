@@ -478,6 +478,29 @@ class EndpointUser extends _i2.EndpointRef {
     'seedBots',
     {},
   );
+
+  /// Logs token usage for a user
+  _i3.Future<void> logTokenUsage({
+    required int userId,
+    required int tokenCount,
+    required String apiCallType,
+  }) => caller.callServerEndpoint<void>(
+    'user',
+    'logTokenUsage',
+    {
+      'userId': userId,
+      'tokenCount': tokenCount,
+      'apiCallType': apiCallType,
+    },
+  );
+
+  /// Gets token usage info for the current user
+  _i3.Future<Map<String, dynamic>> getTokenUsageInfo() =>
+      caller.callServerEndpoint<Map<String, dynamic>>(
+        'user',
+        'getTokenUsageInfo',
+        {},
+      );
 }
 
 /// This is an example endpoint that returns a greeting message through

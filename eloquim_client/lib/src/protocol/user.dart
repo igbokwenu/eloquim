@@ -31,12 +31,14 @@ abstract class User implements _i1.SerializableModel {
     DateTime? lastSeen,
     bool? isAnonymous,
     bool? isBot,
+    int? totalTokenCount,
   }) : emojiSignature = emojiSignature ?? '✨🎵💫',
        hasDoneTutorial = hasDoneTutorial ?? false,
        createdAt = createdAt ?? DateTime.now(),
        lastSeen = lastSeen ?? DateTime.now(),
        isAnonymous = isAnonymous ?? true,
-       isBot = isBot ?? false;
+       isBot = isBot ?? false,
+       totalTokenCount = totalTokenCount ?? 0;
 
   factory User({
     int? id,
@@ -54,6 +56,7 @@ abstract class User implements _i1.SerializableModel {
     DateTime? lastSeen,
     bool? isAnonymous,
     bool? isBot,
+    int? totalTokenCount,
   }) = _UserImpl;
 
   factory User.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -85,6 +88,7 @@ abstract class User implements _i1.SerializableModel {
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['lastSeen']),
       isAnonymous: jsonSerialization['isAnonymous'] as bool?,
       isBot: jsonSerialization['isBot'] as bool?,
+      totalTokenCount: jsonSerialization['totalTokenCount'] as int?,
     );
   }
 
@@ -121,6 +125,8 @@ abstract class User implements _i1.SerializableModel {
 
   bool isBot;
 
+  int totalTokenCount;
+
   /// Returns a shallow copy of this [User]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
@@ -140,6 +146,7 @@ abstract class User implements _i1.SerializableModel {
     DateTime? lastSeen,
     bool? isAnonymous,
     bool? isBot,
+    int? totalTokenCount,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -160,6 +167,7 @@ abstract class User implements _i1.SerializableModel {
       'lastSeen': lastSeen.toJson(),
       'isAnonymous': isAnonymous,
       'isBot': isBot,
+      'totalTokenCount': totalTokenCount,
     };
   }
 
@@ -188,6 +196,7 @@ class _UserImpl extends User {
     DateTime? lastSeen,
     bool? isAnonymous,
     bool? isBot,
+    int? totalTokenCount,
   }) : super._(
          id: id,
          authUserId: authUserId,
@@ -204,6 +213,7 @@ class _UserImpl extends User {
          lastSeen: lastSeen,
          isAnonymous: isAnonymous,
          isBot: isBot,
+         totalTokenCount: totalTokenCount,
        );
 
   /// Returns a shallow copy of this [User]
@@ -226,6 +236,7 @@ class _UserImpl extends User {
     DateTime? lastSeen,
     bool? isAnonymous,
     bool? isBot,
+    int? totalTokenCount,
   }) {
     return User(
       id: id is int? ? id : this.id,
@@ -243,6 +254,7 @@ class _UserImpl extends User {
       lastSeen: lastSeen ?? this.lastSeen,
       isAnonymous: isAnonymous ?? this.isAnonymous,
       isBot: isBot ?? this.isBot,
+      totalTokenCount: totalTokenCount ?? this.totalTokenCount,
     );
   }
 }

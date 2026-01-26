@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:eloquim_client/eloquim_client.dart';
 import '../providers/conversation_provider.dart';
+import '../../../shared/widgets/token_usage_bottom_sheet.dart';
 
 class ConversationListScreen extends ConsumerWidget {
   const ConversationListScreen({super.key});
@@ -17,8 +18,8 @@ class ConversationListScreen extends ConsumerWidget {
         title: const Text('Eloquim'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.person_add),
-            onPressed: () => context.push('/find-match'),
+            icon: const Icon(Icons.info_outline),
+            onPressed: () => TokenUsageBottomSheet.show(context),
           ),
           IconButton(
             icon: const Icon(Icons.settings),

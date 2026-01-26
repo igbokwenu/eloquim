@@ -32,12 +32,14 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
     DateTime? lastSeen,
     bool? isAnonymous,
     bool? isBot,
+    int? totalTokenCount,
   }) : emojiSignature = emojiSignature ?? '✨🎵💫',
        hasDoneTutorial = hasDoneTutorial ?? false,
        createdAt = createdAt ?? DateTime.now(),
        lastSeen = lastSeen ?? DateTime.now(),
        isAnonymous = isAnonymous ?? true,
-       isBot = isBot ?? false;
+       isBot = isBot ?? false,
+       totalTokenCount = totalTokenCount ?? 0;
 
   factory User({
     int? id,
@@ -55,6 +57,7 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
     DateTime? lastSeen,
     bool? isAnonymous,
     bool? isBot,
+    int? totalTokenCount,
   }) = _UserImpl;
 
   factory User.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -86,6 +89,7 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['lastSeen']),
       isAnonymous: jsonSerialization['isAnonymous'] as bool?,
       isBot: jsonSerialization['isBot'] as bool?,
+      totalTokenCount: jsonSerialization['totalTokenCount'] as int?,
     );
   }
 
@@ -124,6 +128,8 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
 
   bool isBot;
 
+  int totalTokenCount;
+
   @override
   _i1.Table<int?> get table => t;
 
@@ -146,6 +152,7 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
     DateTime? lastSeen,
     bool? isAnonymous,
     bool? isBot,
+    int? totalTokenCount,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -166,6 +173,7 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
       'lastSeen': lastSeen.toJson(),
       'isAnonymous': isAnonymous,
       'isBot': isBot,
+      'totalTokenCount': totalTokenCount,
     };
   }
 
@@ -188,6 +196,7 @@ abstract class User implements _i1.TableRow<int?>, _i1.ProtocolSerialization {
       'lastSeen': lastSeen.toJson(),
       'isAnonymous': isAnonymous,
       'isBot': isBot,
+      'totalTokenCount': totalTokenCount,
     };
   }
 
@@ -240,6 +249,7 @@ class _UserImpl extends User {
     DateTime? lastSeen,
     bool? isAnonymous,
     bool? isBot,
+    int? totalTokenCount,
   }) : super._(
          id: id,
          authUserId: authUserId,
@@ -256,6 +266,7 @@ class _UserImpl extends User {
          lastSeen: lastSeen,
          isAnonymous: isAnonymous,
          isBot: isBot,
+         totalTokenCount: totalTokenCount,
        );
 
   /// Returns a shallow copy of this [User]
@@ -278,6 +289,7 @@ class _UserImpl extends User {
     DateTime? lastSeen,
     bool? isAnonymous,
     bool? isBot,
+    int? totalTokenCount,
   }) {
     return User(
       id: id is int? ? id : this.id,
@@ -295,6 +307,7 @@ class _UserImpl extends User {
       lastSeen: lastSeen ?? this.lastSeen,
       isAnonymous: isAnonymous ?? this.isAnonymous,
       isBot: isBot ?? this.isBot,
+      totalTokenCount: totalTokenCount ?? this.totalTokenCount,
     );
   }
 }
@@ -371,6 +384,11 @@ class UserUpdateTable extends _i1.UpdateTable<UserTable> {
     table.isBot,
     value,
   );
+
+  _i1.ColumnValue<int, int> totalTokenCount(int value) => _i1.ColumnValue(
+    table.totalTokenCount,
+    value,
+  );
 }
 
 class UserTable extends _i1.Table<int?> {
@@ -434,6 +452,11 @@ class UserTable extends _i1.Table<int?> {
       this,
       hasDefault: true,
     );
+    totalTokenCount = _i1.ColumnInt(
+      'totalTokenCount',
+      this,
+      hasDefault: true,
+    );
   }
 
   late final UserUpdateTable updateTable;
@@ -466,6 +489,8 @@ class UserTable extends _i1.Table<int?> {
 
   late final _i1.ColumnBool isBot;
 
+  late final _i1.ColumnInt totalTokenCount;
+
   _i2.PersonaTable get persona {
     if (_persona != null) return _persona!;
     _persona = _i1.createRelationTable(
@@ -495,6 +520,7 @@ class UserTable extends _i1.Table<int?> {
     lastSeen,
     isAnonymous,
     isBot,
+    totalTokenCount,
   ];
 
   @override
