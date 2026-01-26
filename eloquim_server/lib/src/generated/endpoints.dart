@@ -705,6 +705,16 @@ class Endpoints extends _i1.EndpointDispatch {
                 limit: params['limit'],
               ),
         ),
+        'seedBots': _i1.MethodConnector(
+          name: 'seedBots',
+          params: {},
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async =>
+                  (endpoints['user'] as _i8.UserEndpoint).seedBots(session),
+        ),
       },
     );
     connectors['greeting'] = _i1.EndpointConnector(

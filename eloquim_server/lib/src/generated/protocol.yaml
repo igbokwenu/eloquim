@@ -33,5 +33,6 @@ user:
   - getUser:
   - updateLastSeen:
   - findMatches:
+  - seedBots:
 greeting:
   - hello:

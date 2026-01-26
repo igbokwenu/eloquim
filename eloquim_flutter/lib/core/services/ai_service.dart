@@ -8,7 +8,7 @@ class AIService {
   factory AIService() => _instance;
   AIService._internal();
 
-  final _model = FirebaseAI.vertexAI().generativeModel(
+  final _model = FirebaseAI.googleAI().generativeModel(
     model: 'gemini-2.5-flash',
     systemInstruction: Content.text('''
       You are Eloquim AI, a sophisticated emoji translation and communication assistant.

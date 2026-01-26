@@ -464,6 +464,13 @@ class EndpointUser extends _i2.EndpointRef {
       'limit': limit,
     },
   );
+
+  /// Seed initial bots if they don't exist
+  _i3.Future<void> seedBots() => caller.callServerEndpoint<void>(
+    'user',
+    'seedBots',
+    {},
+  );
 }
 
 /// This is an example endpoint that returns a greeting message through

@@ -39,6 +39,7 @@ docker-compose up -d
 serverpod generate
 serverpod create-migration
 serverpod run
+dart bin/main.dart --apply-migrations
 
 # Terminal 2: Run Flutter app
 cd eloquim_flutter
