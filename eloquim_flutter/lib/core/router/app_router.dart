@@ -1,5 +1,4 @@
 // eloquim_flutter/lib/core/router/app_router.dart
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
@@ -13,6 +12,7 @@ import '../../features/chat/screens/chat_screen.dart';
 import '../../features/matchmaking/screens/find_match_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../features/profile/screens/settings_screen.dart';
+import '../../features/profile/screens/profile_setup_screen.dart';
 import '../providers/serverpod_client_provider.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -27,23 +27,29 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final currentUser = currentUserAsync.asData?.value;
       final path = state.matchedLocation;
 
-      // Public routes that don't require authentication
+      // Public routes
       final publicRoutes = ['/welcome', '/auth'];
       final isPublicRoute = publicRoutes.any((route) => path.startsWith(route));
 
-      // If not authenticated and not on a public route, redirect to welcome
       if (!isAuthenticated && !isPublicRoute) {
         return '/welcome';
       }
 
-      // If authenticated but user hasn't completed onboarding
       if (isAuthenticated && currentUser != null) {
-        // Check if user has completed tutorial
-        if (!currentUser.hasDoneTutorial) {
-          // Allow access to onboarding routes
+        // If profile is incomplete, redirect to profile setup
+        final isProfileIncomplete =
+            currentUser.username.startsWith('User') ||
+            currentUser.age == null ||
+            currentUser.country == null;
+
+        if (isProfileIncomplete && path != '/profile-setup') {
+          return '/profile-setup';
+        }
+
+        // If user hasn't completed onboarding/tutorial
+        if (!isProfileIncomplete && !currentUser.hasDoneTutorial) {
           final onboardingRoutes = ['/quiz', '/quiz-result', '/tutorial'];
           if (!onboardingRoutes.any((route) => path.startsWith(route))) {
-            // If not on an onboarding route, redirect to quiz
             return '/quiz';
           }
         }
@@ -70,9 +76,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const AuthScreen(),
       ),
       GoRoute(
+        path: '/profile-setup',
+        builder: (context, state) => const ProfileSetupScreen(),
+      ),
+      GoRoute(
         path: '/quiz',
         builder: (context, state) => const QuizScreen(),
       ),
+      // ... rest of routes
       GoRoute(
         path: '/quiz-result',
         builder: (context, state) {

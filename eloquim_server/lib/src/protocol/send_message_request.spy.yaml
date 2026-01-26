@@ -10,3 +10,4 @@ fields:
   confidenceScore: double?
   mediaGifUrl: String?
   replyToMsgId: int?
+  recommendedEmojis: List<String>?

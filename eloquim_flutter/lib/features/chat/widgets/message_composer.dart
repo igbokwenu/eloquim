@@ -1,18 +1,20 @@
 // eloquim_flutter/lib/features/chat/widgets/message_composer.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:eloquim_client/eloquim_client.dart';
 import '../../../shared/constants/tone_constants.dart';
-import '../providers/recommendation_provider.dart';
 
 class MessageComposer extends ConsumerStatefulWidget {
   final Function(String text, List<String>? emojis) onSend;
   final String currentTone;
   final Function(String tone) onToneChanged;
+  final List<Message> history;
 
   const MessageComposer({
     required this.onSend,
     required this.currentTone,
     required this.onToneChanged,
+    required this.history,
     super.key,
   });
 
@@ -21,30 +23,78 @@ class MessageComposer extends ConsumerStatefulWidget {
 }
 
 class _MessageComposerState extends ConsumerState<MessageComposer> {
-  final TextEditingController _controller = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
   List<String> selectedEmojis = [];
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    _focusNode.dispose();
-    super.dispose();
-  }
+  // A curated list of 50 common emojis for the keyboard v1
+  final List<String> standardEmojis = [
+    '👋',
+    '😊',
+    '😂',
+    '🥰',
+    '😎',
+    '🤔',
+    '🙄',
+    '😤',
+    '😭',
+    '🤯',
+    '👍',
+    '🙌',
+    '👏',
+    '🔥',
+    '✨',
+    '💯',
+    '❤️',
+    '💖',
+    '👀',
+    '💭',
+    '🍕',
+    '☕',
+    '🍦',
+    '🎮',
+    '🎵',
+    '📸',
+    '✈️',
+    '🏠',
+    '💼',
+    '⏰',
+    '☀️',
+    '🌙',
+    '🌈',
+    '🌊',
+    '🌸',
+    '🐱',
+    '🐶',
+    '🚀',
+    '🎁',
+    '💰',
+    '🤫',
+    '😏',
+    '🤤',
+    '😴',
+    '🤝',
+    '✌️',
+    '💪',
+    '🙏',
+    '📍',
+    '✅',
+  ];
+
+  final List<String> greetingEmojis = ['👋', '😊', '🙌', '✨', '🌸', '☀️'];
 
   void _handleSend() {
-    final text = _controller.text.trim();
-    if (text.isEmpty && selectedEmojis.isEmpty) return;
+    if (selectedEmojis.isEmpty) return;
 
-    widget.onSend(text, selectedEmojis.isEmpty ? null : selectedEmojis);
-    _controller.clear();
+    widget.onSend('', selectedEmojis);
     setState(() {
       selectedEmojis = [];
     });
-    _focusNode.requestFocus();
   }
 
   void _addEmoji(String emoji) {
+    if (selectedEmojis.length >= 3) {
+      // Show some feedback or just ignore
+      return;
+    }
     setState(() {
       selectedEmojis.add(emoji);
     });
@@ -52,7 +102,8 @@ class _MessageComposerState extends ConsumerState<MessageComposer> {
 
   @override
   Widget build(BuildContext context) {
-    final recommendationsAsync = ref.watch(recommendationsProvider);
+    final lastMessage = widget.history.isNotEmpty ? widget.history.last : null;
+    final recommendedEmojis = lastMessage?.recommendedEmojis ?? [];
 
     return Container(
       decoration: BoxDecoration(
@@ -60,146 +111,55 @@ class _MessageComposerState extends ConsumerState<MessageComposer> {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
-            blurRadius: 4,
+            blurRadius: 10,
             offset: const Offset(0, -2),
           ),
         ],
       ),
       child: SafeArea(
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Emoji suggestions
-            if (recommendationsAsync.asData?.value != null &&
-                recommendationsAsync.asData!.value.singles.isNotEmpty)
-              _buildSuggestions(recommendationsAsync.asData!.value.singles),
-
-            // Tone selector
+            // Tone Selector at the top
             _buildToneSelector(),
 
-            // Selected emojis
-            if (selectedEmojis.isNotEmpty) _buildSelectedEmojis(),
+            const Divider(height: 1),
 
-            // Input field
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  // Emoji picker button
-                  IconButton(
-                    icon: const Icon(Icons.emoji_emotions_outlined),
-                    onPressed: () {
-                      // TODO: Show emoji picker
-                    },
-                  ),
+            // Recommended Emojis (Quick Responses)
+            if (recommendedEmojis.isNotEmpty)
+              _buildRecommendedRow(recommendedEmojis),
 
-                  // Text input
-                  Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      focusNode: _focusNode,
-                      decoration: const InputDecoration(
-                        hintText: 'Type or select emojis...',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(24)),
-                        ),
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                      ),
-                      onChanged: (text) {
-                        // Trigger recommendations
-                        if (text.isNotEmpty) {
-                          ref
-                              .read(recommendationsProvider.notifier)
-                              .getRecommendations(text);
-                        }
-                      },
-                      onSubmitted: (_) => _handleSend(),
-                    ),
-                  ),
+            // Selected Emojis Preview
+            _buildSelectedEmojisRow(),
 
-                  const SizedBox(width: 8),
+            // Emoji Keyboard
+            _buildEmojiKeyboard(),
 
-                  // Send button
-                  FilledButton(
-                    onPressed: _handleSend,
-                    style: FilledButton.styleFrom(
-                      shape: const CircleBorder(),
-                      padding: const EdgeInsets.all(12),
-                    ),
-                    child: const Icon(Icons.send),
-                  ),
-                ],
-              ),
-            ),
+            // Send Button
+            _buildSendButton(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSuggestions(List<String> suggestions) {
-    return Container(
-      height: 60,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: suggestions.length,
-        itemBuilder: (context, index) {
-          final emoji = suggestions[index];
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4.0),
-            child: InkWell(
-              onTap: () => _addEmoji(emoji),
-              borderRadius: BorderRadius.circular(12),
-              child: Container(
-                width: 50,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: Text(
-                    emoji,
-                    style: const TextStyle(fontSize: 28),
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
   Widget _buildToneSelector() {
     return Container(
-      height: 50,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      height: 48,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
         itemCount: ToneConstants.tones.length,
         itemBuilder: (context, index) {
           final tone = ToneConstants.tones[index];
           final isSelected = tone == widget.currentTone;
-
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4.0),
             child: ChoiceChip(
-              label: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(ToneConstants.toneEmojis[tone] ?? ''),
-                  const SizedBox(width: 4),
-                  Text(tone),
-                ],
-              ),
+              label: Text('${ToneConstants.toneEmojis[tone] ?? ''} $tone'),
               selected: isSelected,
               onSelected: (selected) {
-                if (selected) {
-                  widget.onToneChanged(tone);
-                }
+                if (selected) widget.onToneChanged(tone);
               },
             ),
           );
@@ -208,26 +168,155 @@ class _MessageComposerState extends ConsumerState<MessageComposer> {
     );
   }
 
-  Widget _buildSelectedEmojis() {
+  Widget _buildRecommendedRow(List<String> emojis) {
     return Container(
+      height: 60,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      color: Colors.blue.withOpacity(0.05),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        itemCount: emojis.length,
+        itemBuilder: (context, index) {
+          final emoji = emojis[index];
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: ActionChip(
+              label: Text(emoji, style: const TextStyle(fontSize: 24)),
+              onPressed: () => _addEmoji(emoji),
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSelectedEmojisRow() {
+    return Container(
+      height: 80,
+      decoration: BoxDecoration(
+        color: Colors.grey.withOpacity(0.05),
+      ),
+      child: Center(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (selectedEmojis.isEmpty)
+              const Text(
+                'Select up to 3 emojis...',
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontStyle: FontStyle.italic,
+                ),
+              )
+            else
+              ...selectedEmojis.asMap().entries.map((entry) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Stack(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          entry.value,
+                          style: const TextStyle(fontSize: 32),
+                        ),
+                      ),
+                      Positioned(
+                        right: -10,
+                        top: -10,
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.cancel,
+                            size: 20,
+                            color: Colors.red,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              selectedEmojis.removeAt(entry.key);
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmojiKeyboard() {
+    // Merge greetings into the top if no history
+    final displayEmojis = widget.history.isEmpty
+        ? [
+            ...greetingEmojis,
+            ...standardEmojis.where((e) => !greetingEmojis.contains(e)),
+          ]
+        : standardEmojis;
+
+    return Container(
+      height: 200,
       padding: const EdgeInsets.all(8),
-      child: Wrap(
-        spacing: 8,
-        children: [
-          ...selectedEmojis.asMap().entries.map((entry) {
-            final index = entry.key;
-            final emoji = entry.value;
-            return Chip(
-              label: Text(emoji, style: const TextStyle(fontSize: 20)),
-              deleteIcon: const Icon(Icons.close, size: 16),
-              onDeleted: () {
-                setState(() {
-                  selectedEmojis.removeAt(index);
-                });
-              },
-            );
-          }),
-        ],
+      child: GridView.builder(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 8,
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 8,
+        ),
+        itemCount: displayEmojis.length,
+        itemBuilder: (context, index) {
+          final emoji = displayEmojis[index];
+          return InkWell(
+            onTap: () => _addEmoji(emoji),
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: Text(emoji, style: const TextStyle(fontSize: 24)),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSendButton() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: SizedBox(
+        width: double.infinity,
+        height: 50,
+        child: FilledButton.icon(
+          onPressed: selectedEmojis.isEmpty ? null : _handleSend,
+          icon: const Icon(Icons.send),
+          label: const Text('Send Emojis'),
+          style: FilledButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
       ),
     );
   }

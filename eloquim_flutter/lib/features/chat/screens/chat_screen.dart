@@ -30,14 +30,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           .read(currentConversationIdProvider.notifier)
           .set(widget.conversationId);
     });
-
-    // Listen for bot actions (navigation, etc.)
-    ref.listenManual(botActionProvider, (previous, next) {
-      if (next == 'navigateToFindMatch') {
-        context.push('/find-match');
-        ref.read(botActionProvider.notifier).set(null); // Clear
-      }
-    });
   }
 
   @override
@@ -64,6 +56,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       appBar: AppBar(
         title: const Text('Chat'),
         actions: [
+          // Find New Match Button
+          TextButton.icon(
+            onPressed: () => context.push('/find-match'),
+            icon: const Icon(Icons.person_add_outlined),
+            label: const Text('New Match'),
+            style: TextButton.styleFrom(foregroundColor: Colors.white),
+          ),
           IconButton(
             icon: const Icon(Icons.info_outline),
             onPressed: () {
@@ -88,15 +87,39 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 child: chatState.messages.isEmpty
                     ? const Center(
                         child: Text(
-                          'Start the conversation! 👋',
+                          'Start the conversation! 👋\nUse the emoji keyboard below.',
+                          textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 18),
                         ),
                       )
                     : ListView.builder(
                         controller: _scrollController,
                         padding: const EdgeInsets.all(8),
-                        itemCount: chatState.messages.length,
+                        itemCount:
+                            chatState.messages.length +
+                            (chatState.isTyping ? 1 : 0),
                         itemBuilder: (context, index) {
+                          if (index == chatState.messages.length) {
+                            return const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: Row(
+                                children: [
+                                  SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Eloquim is thinking...',
+                                    style: TextStyle(color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
                           final message = chatState.messages[index];
                           return ChatBubble(message: message);
                         },
@@ -105,6 +128,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
               // Message composer
               MessageComposer(
+                history: chatState.messages,
                 onSend: (text, emojis) async {
                   await ref
                       .read(chatProvider.notifier)

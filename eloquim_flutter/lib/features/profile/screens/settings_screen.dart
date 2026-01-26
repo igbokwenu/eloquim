@@ -217,7 +217,6 @@ class SettingsScreen extends ConsumerWidget {
               }
             },
           ),
-
           ListTile(
             leading: const Icon(Icons.delete_forever, color: Colors.red),
             title: const Text(
@@ -273,6 +272,17 @@ class SettingsScreen extends ConsumerWidget {
                   }
                 }
               }
+            },
+          ),
+
+          ListTile(
+            leading: const Icon(Icons.person),
+            title: const Text('Edit Profile'),
+            subtitle: Text(
+              '${userAsync.value?.username ?? ''} • ${userAsync.value?.country ?? ''}',
+            ),
+            onTap: () {
+              context.push('/profile-setup');
             },
           ),
 

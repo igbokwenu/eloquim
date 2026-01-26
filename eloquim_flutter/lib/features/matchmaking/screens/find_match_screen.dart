@@ -47,6 +47,25 @@ class _FindMatchScreenState extends ConsumerState<FindMatchScreen> {
     ref.read(matchProvider.notifier).nextMatch();
   }
 
+  String _getFlag(String countryName) {
+    // Simple mapping for common countries, fallback to world globe
+    final mapping = {
+      'USA': '🇺🇸',
+      'United States': '🇺🇸',
+      'UK': '🇬🇧',
+      'United Kingdom': '🇬🇧',
+      'Canada': '🇨🇦',
+      'Nigeria': '🇳🇬',
+      'Germany': '🇩🇪',
+      'France': '🇫🇷',
+      'Japan': '🇯🇵',
+      'China': '🇨🇳',
+      'India': '🇮🇳',
+      'Brazil': '🇧🇷',
+    };
+    return mapping[countryName] ?? '🌍';
+  }
+
   @override
   Widget build(BuildContext context) {
     final matchAsync = ref.watch(matchProvider);
@@ -134,17 +153,35 @@ class _FindMatchScreenState extends ConsumerState<FindMatchScreen> {
                             // Age and country
                             if (currentMatch.age != null ||
                                 currentMatch.country != null)
-                              Text(
-                                [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
                                   if (currentMatch.age != null)
-                                    '${currentMatch.age}',
+                                    Text(
+                                      '${currentMatch.age} yrs',
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  if (currentMatch.age != null &&
+                                      currentMatch.country != null)
+                                    const Text(
+                                      ' • ',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
                                   if (currentMatch.country != null)
-                                    currentMatch.country,
-                                ].join(' • '),
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.grey,
-                                ),
+                                    Text(
+                                      '${_getFlag(currentMatch.country!)} ${currentMatch.country}',
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                ],
                               ),
                             const SizedBox(height: 32),
 

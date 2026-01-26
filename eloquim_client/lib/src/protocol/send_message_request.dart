@@ -24,6 +24,7 @@ abstract class SendMessageRequest implements _i1.SerializableModel {
     this.confidenceScore,
     this.mediaGifUrl,
     this.replyToMsgId,
+    this.recommendedEmojis,
   });
 
   factory SendMessageRequest({
@@ -36,6 +37,7 @@ abstract class SendMessageRequest implements _i1.SerializableModel {
     double? confidenceScore,
     String? mediaGifUrl,
     int? replyToMsgId,
+    List<String>? recommendedEmojis,
   }) = _SendMessageRequestImpl;
 
   factory SendMessageRequest.fromJson(Map<String, dynamic> jsonSerialization) {
@@ -52,6 +54,11 @@ abstract class SendMessageRequest implements _i1.SerializableModel {
           ?.toDouble(),
       mediaGifUrl: jsonSerialization['mediaGifUrl'] as String?,
       replyToMsgId: jsonSerialization['replyToMsgId'] as int?,
+      recommendedEmojis: jsonSerialization['recommendedEmojis'] == null
+          ? null
+          : _i2.Protocol().deserialize<List<String>>(
+              jsonSerialization['recommendedEmojis'],
+            ),
     );
   }
 
@@ -73,6 +80,8 @@ abstract class SendMessageRequest implements _i1.SerializableModel {
 
   int? replyToMsgId;
 
+  List<String>? recommendedEmojis;
+
   /// Returns a shallow copy of this [SendMessageRequest]
   /// with some or all fields replaced by the given arguments.
   @_i1.useResult
@@ -86,6 +95,7 @@ abstract class SendMessageRequest implements _i1.SerializableModel {
     double? confidenceScore,
     String? mediaGifUrl,
     int? replyToMsgId,
+    List<String>? recommendedEmojis,
   });
   @override
   Map<String, dynamic> toJson() {
@@ -100,6 +110,8 @@ abstract class SendMessageRequest implements _i1.SerializableModel {
       if (confidenceScore != null) 'confidenceScore': confidenceScore,
       if (mediaGifUrl != null) 'mediaGifUrl': mediaGifUrl,
       if (replyToMsgId != null) 'replyToMsgId': replyToMsgId,
+      if (recommendedEmojis != null)
+        'recommendedEmojis': recommendedEmojis?.toJson(),
     };
   }
 
@@ -122,6 +134,7 @@ class _SendMessageRequestImpl extends SendMessageRequest {
     double? confidenceScore,
     String? mediaGifUrl,
     int? replyToMsgId,
+    List<String>? recommendedEmojis,
   }) : super._(
          conversationId: conversationId,
          rawIntent: rawIntent,
@@ -132,6 +145,7 @@ class _SendMessageRequestImpl extends SendMessageRequest {
          confidenceScore: confidenceScore,
          mediaGifUrl: mediaGifUrl,
          replyToMsgId: replyToMsgId,
+         recommendedEmojis: recommendedEmojis,
        );
 
   /// Returns a shallow copy of this [SendMessageRequest]
@@ -148,6 +162,7 @@ class _SendMessageRequestImpl extends SendMessageRequest {
     Object? confidenceScore = _Undefined,
     Object? mediaGifUrl = _Undefined,
     Object? replyToMsgId = _Undefined,
+    Object? recommendedEmojis = _Undefined,
   }) {
     return SendMessageRequest(
       conversationId: conversationId ?? this.conversationId,
@@ -164,6 +179,9 @@ class _SendMessageRequestImpl extends SendMessageRequest {
           : this.confidenceScore,
       mediaGifUrl: mediaGifUrl is String? ? mediaGifUrl : this.mediaGifUrl,
       replyToMsgId: replyToMsgId is int? ? replyToMsgId : this.replyToMsgId,
+      recommendedEmojis: recommendedEmojis is List<String>?
+          ? recommendedEmojis
+          : this.recommendedEmojis?.map((e0) => e0).toList(),
     );
   }
 }

@@ -65,6 +65,7 @@ class ChatEndpoint extends Endpoint {
         confidenceScore: confidenceScore,
         mediaGifUrl: request.mediaGifUrl,
         replyToMsgId: request.replyToMsgId,
+        recommendedEmojis: request.recommendedEmojis,
         createdAt: DateTime.now(),
       );
 

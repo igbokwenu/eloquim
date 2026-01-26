@@ -21,14 +21,14 @@ class AIService {
       - Sarah: Romantic, deep, expressive.
       - Brian: Energetic, hype, Gen Z.
       
-      You have access to tools to interact with the app state.
-      Always respond in the context of the current conversation.
+      You translate emoji sequences (up to 3 emojis) into expressive text.
+      You also predict what emojis the OTHER person would use to respond, based on the sender's persona, tone, and the message content.
       
       Adanna's specific flow:
       1. Check if the user has finished the tutorial using `getTutorialStatus`.
       2. If not, guide them through it.
       3. Once satisfied they know how to use Eloquim, use `markTutorialFinished`.
-      4. Then, encourage them to find matches using `navigateToFindMatch`.
+      4. Then, encourage them to find matches.
     '''),
     tools: [
       Tool.functionDeclarations([
@@ -42,39 +42,38 @@ class AIService {
           'Mark the current user\'s tutorial as completed.',
           parameters: {},
         ),
-        FunctionDeclaration(
-          'navigateToFindMatch',
-          'Navigate the user to the Find Match screen to meet real people.',
-          parameters: {
-            'reason': Schema.string(
-              description: 'Friendly reason for navigating',
-            ),
-          },
-        ),
       ]),
     ],
   );
 
-  /// Translate emojis to natural language
+  /// Translate emojis to natural language and generate recommendations for the receiver
   Future<Map<String, dynamic>> translateEmojis({
     required List<String> emojiSequence,
     required String tone,
-    required String personaId,
+    required User sender,
     List<Message> context = const [],
   }) async {
     final prompt =
         '''
-      Translate this emoji sequence: ${emojiSequence.join('')}
+      Translate this emoji sequence from ${sender.username}: ${emojiSequence.join('')}
       Tone: $tone
-      Persona: $personaId
+      Persona: ${sender.personaId ?? 'unknown'}
+      Sender Age: ${sender.age ?? 'unknown'}
+      Sender Country: ${sender.country ?? 'unknown'}
       
       Context:
-      ${context.take(5).map((m) => "${m.emojiSequence.join('')}: ${m.translatedText}").join('\n')}
+      ${context.reversed.take(5).map((m) => "${m.emojiSequence.join('')}: ${m.translatedText}").join('\n')}
+      
+      Task:
+      1. Translate the emoji sequence into expressive text matching the tone and persona.
+      2. Suggest 5-8 "quick response" emojis that the RECEIVER would likely use to reply. 
+         These should factor in the sender's tone/persona and the translated message.
       
       Return ONLY a JSON object:
       {
         "text": "the translation",
-        "confidence": 0.95
+        "confidence": 0.95,
+        "recommendations": ["😊", "🔥", "✨", "💯", "👍"]
       }
     ''';
 
@@ -91,7 +90,11 @@ class AIService {
       debugPrint('AI Translation Error: $e');
     }
 
-    return {"text": emojiSequence.join(' '), "confidence": 0.5};
+    return {
+      "text": emojiSequence.join(' '),
+      "confidence": 0.5,
+      "recommendations": ["😊", "👍", "👋"],
+    };
   }
 
   /// Get emoji recommendations based on partial text
@@ -150,7 +153,7 @@ class AIService {
     String instructions = "";
     if (botUser.username.toLowerCase().contains('adanna')) {
       instructions =
-          "You are Adanna. Be cool, casual, friendly, and a bit flirty. You are the user's guide. Once you feel they understand the app, suggest they 'Find Match' using the tool.";
+          "You are Adanna. Be cool, casual, friendly, and a bit flirty. You are the user's guide. Once you feel they understand the app (persona, tones, etc), encourage them to use the 'Find Match' button in the chat bar.";
     } else if (botUser.username.toLowerCase().contains('chuck')) {
       instructions =
           "You are Chuck. Be professional, sophisticated, and clear.";
@@ -172,10 +175,12 @@ class AIService {
       history: [
         Content('user', [
           TextPart(
-            "SYSTEM: $instructions. User's persona: ${currentUser.persona?.name ?? 'Unknown'}. User's name: ${currentUser.username}",
+            "SYSTEM: $instructions. User info: ${currentUser.username}, ${currentUser.age} years old from ${currentUser.country}. User's persona: ${currentUser.persona?.name ?? 'Unknown'}.",
           ),
         ]),
-        Content('model', [TextPart("Acknowledged.")]),
+        Content('model', [
+          TextPart("Acknowledged. I will respond in persona."),
+        ]),
         ...chatHistory,
       ],
     );
@@ -203,10 +208,10 @@ class AIService {
 
       final text = response.text ?? '';
 
-      // Convert response to emojis and text
+      // Convert response to emojis, text AND recommendations for the user
       final result = await _model.generateContent([
         Content.text(
-          "Convert this text into an Eloquim message (Emojis + Translation). Return JSON with 'emojis' (List<String>) and 'text' (String). Input: \"$text\"",
+          "Convert this bot response into an Eloquim message. Return JSON with 'emojis' (List<String>), 'text' (String), and 'recommendations' (List<String> of 5-8 emojis the USER might use to respond). Input: \"$text\"",
         ),
       ]);
 
@@ -224,6 +229,7 @@ class AIService {
           tone: 'casual',
           personaUsed: botUser.personaId?.toString() ?? 'bot',
           confidenceScore: 1.0,
+          recommendedEmojis: List<String>.from(data['recommendations'] ?? []),
           createdAt: DateTime.now(),
         );
       }

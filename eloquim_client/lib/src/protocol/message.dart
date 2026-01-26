@@ -30,6 +30,7 @@ abstract class Message implements _i1.SerializableModel {
     double? confidenceScore,
     this.mediaGifUrl,
     this.replyToMsgId,
+    this.recommendedEmojis,
     DateTime? createdAt,
     this.deliveredAt,
     this.readAt,
@@ -53,6 +54,7 @@ abstract class Message implements _i1.SerializableModel {
     double? confidenceScore,
     String? mediaGifUrl,
     int? replyToMsgId,
+    List<String>? recommendedEmojis,
     DateTime? createdAt,
     DateTime? deliveredAt,
     DateTime? readAt,
@@ -83,6 +85,11 @@ abstract class Message implements _i1.SerializableModel {
           ?.toDouble(),
       mediaGifUrl: jsonSerialization['mediaGifUrl'] as String?,
       replyToMsgId: jsonSerialization['replyToMsgId'] as int?,
+      recommendedEmojis: jsonSerialization['recommendedEmojis'] == null
+          ? null
+          : _i4.Protocol().deserialize<List<String>>(
+              jsonSerialization['recommendedEmojis'],
+            ),
       createdAt: jsonSerialization['createdAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
@@ -127,6 +134,8 @@ abstract class Message implements _i1.SerializableModel {
 
   int? replyToMsgId;
 
+  List<String>? recommendedEmojis;
+
   DateTime createdAt;
 
   DateTime? deliveredAt;
@@ -152,6 +161,7 @@ abstract class Message implements _i1.SerializableModel {
     double? confidenceScore,
     String? mediaGifUrl,
     int? replyToMsgId,
+    List<String>? recommendedEmojis,
     DateTime? createdAt,
     DateTime? deliveredAt,
     DateTime? readAt,
@@ -174,6 +184,8 @@ abstract class Message implements _i1.SerializableModel {
       'confidenceScore': confidenceScore,
       if (mediaGifUrl != null) 'mediaGifUrl': mediaGifUrl,
       if (replyToMsgId != null) 'replyToMsgId': replyToMsgId,
+      if (recommendedEmojis != null)
+        'recommendedEmojis': recommendedEmojis?.toJson(),
       'createdAt': createdAt.toJson(),
       if (deliveredAt != null) 'deliveredAt': deliveredAt?.toJson(),
       if (readAt != null) 'readAt': readAt?.toJson(),
@@ -204,6 +216,7 @@ class _MessageImpl extends Message {
     double? confidenceScore,
     String? mediaGifUrl,
     int? replyToMsgId,
+    List<String>? recommendedEmojis,
     DateTime? createdAt,
     DateTime? deliveredAt,
     DateTime? readAt,
@@ -222,6 +235,7 @@ class _MessageImpl extends Message {
          confidenceScore: confidenceScore,
          mediaGifUrl: mediaGifUrl,
          replyToMsgId: replyToMsgId,
+         recommendedEmojis: recommendedEmojis,
          createdAt: createdAt,
          deliveredAt: deliveredAt,
          readAt: readAt,
@@ -246,6 +260,7 @@ class _MessageImpl extends Message {
     double? confidenceScore,
     Object? mediaGifUrl = _Undefined,
     Object? replyToMsgId = _Undefined,
+    Object? recommendedEmojis = _Undefined,
     DateTime? createdAt,
     Object? deliveredAt = _Undefined,
     Object? readAt = _Undefined,
@@ -268,6 +283,9 @@ class _MessageImpl extends Message {
       confidenceScore: confidenceScore ?? this.confidenceScore,
       mediaGifUrl: mediaGifUrl is String? ? mediaGifUrl : this.mediaGifUrl,
       replyToMsgId: replyToMsgId is int? ? replyToMsgId : this.replyToMsgId,
+      recommendedEmojis: recommendedEmojis is List<String>?
+          ? recommendedEmojis
+          : this.recommendedEmojis?.map((e0) => e0).toList(),
       createdAt: createdAt ?? this.createdAt,
       deliveredAt: deliveredAt is DateTime? ? deliveredAt : this.deliveredAt,
       readAt: readAt is DateTime? ? readAt : this.readAt,

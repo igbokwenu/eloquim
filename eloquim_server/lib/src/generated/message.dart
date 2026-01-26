@@ -32,6 +32,7 @@ abstract class Message
     double? confidenceScore,
     this.mediaGifUrl,
     this.replyToMsgId,
+    this.recommendedEmojis,
     DateTime? createdAt,
     this.deliveredAt,
     this.readAt,
@@ -55,6 +56,7 @@ abstract class Message
     double? confidenceScore,
     String? mediaGifUrl,
     int? replyToMsgId,
+    List<String>? recommendedEmojis,
     DateTime? createdAt,
     DateTime? deliveredAt,
     DateTime? readAt,
@@ -85,6 +87,11 @@ abstract class Message
           ?.toDouble(),
       mediaGifUrl: jsonSerialization['mediaGifUrl'] as String?,
       replyToMsgId: jsonSerialization['replyToMsgId'] as int?,
+      recommendedEmojis: jsonSerialization['recommendedEmojis'] == null
+          ? null
+          : _i4.Protocol().deserialize<List<String>>(
+              jsonSerialization['recommendedEmojis'],
+            ),
       createdAt: jsonSerialization['createdAt'] == null
           ? null
           : _i1.DateTimeJsonExtension.fromJson(jsonSerialization['createdAt']),
@@ -131,6 +138,8 @@ abstract class Message
 
   int? replyToMsgId;
 
+  List<String>? recommendedEmojis;
+
   DateTime createdAt;
 
   DateTime? deliveredAt;
@@ -159,6 +168,7 @@ abstract class Message
     double? confidenceScore,
     String? mediaGifUrl,
     int? replyToMsgId,
+    List<String>? recommendedEmojis,
     DateTime? createdAt,
     DateTime? deliveredAt,
     DateTime? readAt,
@@ -181,6 +191,8 @@ abstract class Message
       'confidenceScore': confidenceScore,
       if (mediaGifUrl != null) 'mediaGifUrl': mediaGifUrl,
       if (replyToMsgId != null) 'replyToMsgId': replyToMsgId,
+      if (recommendedEmojis != null)
+        'recommendedEmojis': recommendedEmojis?.toJson(),
       'createdAt': createdAt.toJson(),
       if (deliveredAt != null) 'deliveredAt': deliveredAt?.toJson(),
       if (readAt != null) 'readAt': readAt?.toJson(),
@@ -206,6 +218,8 @@ abstract class Message
       'confidenceScore': confidenceScore,
       if (mediaGifUrl != null) 'mediaGifUrl': mediaGifUrl,
       if (replyToMsgId != null) 'replyToMsgId': replyToMsgId,
+      if (recommendedEmojis != null)
+        'recommendedEmojis': recommendedEmojis?.toJson(),
       'createdAt': createdAt.toJson(),
       if (deliveredAt != null) 'deliveredAt': deliveredAt?.toJson(),
       if (readAt != null) 'readAt': readAt?.toJson(),
@@ -266,6 +280,7 @@ class _MessageImpl extends Message {
     double? confidenceScore,
     String? mediaGifUrl,
     int? replyToMsgId,
+    List<String>? recommendedEmojis,
     DateTime? createdAt,
     DateTime? deliveredAt,
     DateTime? readAt,
@@ -284,6 +299,7 @@ class _MessageImpl extends Message {
          confidenceScore: confidenceScore,
          mediaGifUrl: mediaGifUrl,
          replyToMsgId: replyToMsgId,
+         recommendedEmojis: recommendedEmojis,
          createdAt: createdAt,
          deliveredAt: deliveredAt,
          readAt: readAt,
@@ -308,6 +324,7 @@ class _MessageImpl extends Message {
     double? confidenceScore,
     Object? mediaGifUrl = _Undefined,
     Object? replyToMsgId = _Undefined,
+    Object? recommendedEmojis = _Undefined,
     DateTime? createdAt,
     Object? deliveredAt = _Undefined,
     Object? readAt = _Undefined,
@@ -330,6 +347,9 @@ class _MessageImpl extends Message {
       confidenceScore: confidenceScore ?? this.confidenceScore,
       mediaGifUrl: mediaGifUrl is String? ? mediaGifUrl : this.mediaGifUrl,
       replyToMsgId: replyToMsgId is int? ? replyToMsgId : this.replyToMsgId,
+      recommendedEmojis: recommendedEmojis is List<String>?
+          ? recommendedEmojis
+          : this.recommendedEmojis?.map((e0) => e0).toList(),
       createdAt: createdAt ?? this.createdAt,
       deliveredAt: deliveredAt is DateTime? ? deliveredAt : this.deliveredAt,
       readAt: readAt is DateTime? ? readAt : this.readAt,
@@ -392,6 +412,13 @@ class MessageUpdateTable extends _i1.UpdateTable<MessageTable> {
 
   _i1.ColumnValue<int, int> replyToMsgId(int? value) => _i1.ColumnValue(
     table.replyToMsgId,
+    value,
+  );
+
+  _i1.ColumnValue<List<String>, List<String>> recommendedEmojis(
+    List<String>? value,
+  ) => _i1.ColumnValue(
+    table.recommendedEmojis,
     value,
   );
 
@@ -464,6 +491,10 @@ class MessageTable extends _i1.Table<int?> {
       'replyToMsgId',
       this,
     );
+    recommendedEmojis = _i1.ColumnSerializable<List<String>>(
+      'recommendedEmojis',
+      this,
+    );
     createdAt = _i1.ColumnDateTime(
       'createdAt',
       this,
@@ -509,6 +540,8 @@ class MessageTable extends _i1.Table<int?> {
   late final _i1.ColumnString mediaGifUrl;
 
   late final _i1.ColumnInt replyToMsgId;
+
+  late final _i1.ColumnSerializable<List<String>> recommendedEmojis;
 
   late final _i1.ColumnDateTime createdAt;
 
@@ -557,6 +590,7 @@ class MessageTable extends _i1.Table<int?> {
     confidenceScore,
     mediaGifUrl,
     replyToMsgId,
+    recommendedEmojis,
     createdAt,
     deliveredAt,
     readAt,

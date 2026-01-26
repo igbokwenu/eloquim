@@ -102,7 +102,7 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
     final translation = await _aiService.translateEmojis(
       emojiSequence: emojiOverride ?? [],
       tone: currentState.currentTone,
-      personaId: user.personaId?.toString() ?? 'default',
+      sender: user,
       context: currentState.messages,
     );
 
@@ -138,6 +138,9 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
           personaId: user.personaId?.toString() ?? 'default',
           translatedText: translation['text'],
           confidenceScore: (translation['confidence'] as num?)?.toDouble(),
+          recommendedEmojis: List<String>.from(
+            translation['recommendations'] ?? [],
+          ),
         ),
       );
 
@@ -279,6 +282,7 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
             personaId: botUser.personaId?.toString() ?? 'bot',
             translatedText: botReply.translatedText,
             confidenceScore: 1.0,
+            recommendedEmojis: botReply.recommendedEmojis,
           ),
         );
       } catch (e) {
