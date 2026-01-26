@@ -108,7 +108,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Question ${currentQuestion + 1}/${questions.length}'),
+        title: Text(
+          '(Persona Quiz) Question ${currentQuestion + 1}/${questions.length}',
+        ),
       ),
       body: SafeArea(
         child: Padding(
