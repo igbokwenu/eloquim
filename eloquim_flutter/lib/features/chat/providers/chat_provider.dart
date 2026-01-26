@@ -216,39 +216,23 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
     if (_conversationId == null) return;
 
     try {
-      // Find other participant in the conversation
-      // We can fetch recent messages to find the other sender, OR fetch conversation participants
-      // For now, let's assume we can fetch the other user ID from the conversation
-      // Since we don't have conversation participants easily available in the client generated code right now without a specific endpoint,
-      // let's fetch any message NOT from the current user in this conversation.
-
-      final messages = await _client.chat.getMessages(
+      // Fetch conversation to get participant list
+      final conversation = await _client.conversation.getConversation(
         _conversationId!,
-        limit: 20,
       );
-      final otherMessage = messages.firstWhere(
-        (m) => m.senderId != currentUser.id,
-        orElse: () => Message(
-          conversationId: _conversationId!,
-          senderId: -1,
-          emojiSequence: [],
-          translatedText: '',
-          tone: 'casual',
-          personaUsed: 'none',
-          confidenceScore: 0.0,
-          createdAt: DateTime.now(),
-        ),
+      if (conversation == null) return;
+
+      // Find the participant who is NOT the current user
+      final otherId = conversation.participantIds.firstWhere(
+        (id) => id != currentUser.id,
+        orElse: () => -1,
       );
 
-      if (otherMessage.senderId != -1) {
-        final otherUser = await _client.user.getUser(otherMessage.senderId);
+      if (otherId != -1) {
+        final otherUser = await _client.user.getUser(otherId);
         if (otherUser != null && otherUser.isBot) {
           await triggerBotResponse(otherUser);
         }
-      } else {
-        // If it's a new conversation with a bot (e.g. Adanna tutorial)
-        // We might need to know who the bot is.
-        // Let's assume Adanna is seeded as a user.
       }
     } catch (e) {
       debugPrint('Error in bot reply check: $e');

@@ -15,7 +15,7 @@ class AIService {
       Your primary job is to translate emojis to natural language and vice versa, 
       matching the user's selected tone and persona.
       
-      When acting as a bot persona (like Adanna), you embodiment that personality:
+      When acting as a bot persona (like Adanna), you embody that personality:
       - Adanna: Cool, casual, friendly, and a bit flirty. She's the user's guide.
       - Chuck: Professional, sophisticated, clear.
       - Sarah: Romantic, deep, expressive.
@@ -151,12 +151,12 @@ class AIService {
     if (botUser.username.toLowerCase().contains('adanna')) {
       instructions =
           "You are Adanna. Be cool, casual, friendly, and a bit flirty. You are the user's guide. Once you feel they understand the app, suggest they 'Find Match' using the tool.";
-    } else if (botUser.username.toLowerCase().contains('musa')) {
+    } else if (botUser.username.toLowerCase().contains('chuck')) {
       instructions =
           "You are Chuck. Be professional, sophisticated, and clear.";
-    } else if (botUser.username.toLowerCase().contains('zainab')) {
+    } else if (botUser.username.toLowerCase().contains('sarah')) {
       instructions = "You are Sarah. Be deep, romantic, and expressive.";
-    } else if (botUser.username.toLowerCase().contains('tunde')) {
+    } else if (botUser.username.toLowerCase().contains('brian')) {
       instructions = "You are Brian. Be energetic, hype, and use Gen Z slang.";
     }
 

@@ -1,6 +1,7 @@
 // eloquim_server/lib/src/endpoints/chat_endpoint.dart
 import 'package:serverpod/serverpod.dart'
     hide Message; // FIX: Hide Serverpod's internal Message class
+import 'package:serverpod_auth_idp_server/core.dart';
 import '../generated/protocol.dart';
 import '../services/ai_translation_service.dart';
 
@@ -16,7 +17,15 @@ class ChatEndpoint extends Endpoint {
       throw Exception('Not authenticated');
     }
     // FIX: Parse userId from string (Serverpod Auth standard)
-    final userId = int.parse(authInfo.userIdentifier);
+    // Get custom user object to get the int ID
+    final user = await User.db.findFirstRow(
+      session,
+      where: (t) => t.authUserId.equals(authInfo.authUserId),
+    );
+    if (user == null) {
+      throw Exception('User record not found');
+    }
+    final userId = user.id!;
 
     try {
       // 2. Get conversation context
@@ -137,7 +146,15 @@ class ChatEndpoint extends Endpoint {
     if (authInfo == null) {
       throw Exception('Not authenticated');
     }
-    final userId = int.parse(authInfo.userIdentifier);
+    // Get custom user object to get the int ID
+    final user = await User.db.findFirstRow(
+      session,
+      where: (t) => t.authUserId.equals(authInfo.authUserId),
+    );
+    if (user == null) {
+      throw Exception('User record not found');
+    }
+    final userId = user.id!;
 
     final conversation = await Conversation.db.findById(
       session,
