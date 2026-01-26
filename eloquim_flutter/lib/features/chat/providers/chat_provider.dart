@@ -155,6 +155,9 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
           isTyping: false,
         ),
       );
+
+      // Trigger bot reply if the recipient is a bot
+      _triggerBotReplyIfNecessary(sentMessage, user);
     } catch (e) {
       final updatedMessages = currentState.messages
           .where((m) => m.id != tempMessage.id)
@@ -188,21 +191,11 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
               );
 
               // Check if we should trigger a bot response
-              final userAsync = ref.read(currentUserProvider);
-              final currentUser = userAsync.asData?.value;
-              // If the message is NOT from the current user, it might be from a bot
-              if (currentUser != null && message.senderId != currentUser.id) {
-                // Check if sender is a bot
-                final sender = await _client.user.getUser(message.senderId);
-                if (sender != null && sender.isBot) {
-                  // Bot already sent a message, we don't need to trigger unless it was AI-driven
-                  // Actually, in our flow, the AI bot responds to the USER's message.
-                }
-              } else if (currentUser != null &&
-                  message.senderId == currentUser.id) {
-                // If message is FROM current user, check if recipient is a bot
-                _triggerBotReplyIfNecessary(message, currentUser);
-              }
+
+              // Only trigger from stream if it's a message from someone ELSE
+              // (In case of human partners, we don't trigger AI.
+              // If it's a bot, the bot's own message doesn't trigger another reply).
+              // The primary trigger for bots is when the CURRENT user sends a message.
             }
           },
           onError: (error) {

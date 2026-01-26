@@ -52,9 +52,18 @@ class ConversationEndpoint extends Endpoint {
       participantIds.add(userId);
     }
 
+    String? effectiveTitle = title;
+    if (effectiveTitle == null && participantIds.length == 2) {
+      final otherId = participantIds.firstWhere((id) => id != userId);
+      final otherUser = await User.db.findById(session, otherId);
+      if (otherUser != null) {
+        effectiveTitle = otherUser.username;
+      }
+    }
+
     final conversation = Conversation(
       type: participantIds.length == 2 ? 'p2p' : 'group',
-      title: title,
+      title: effectiveTitle ?? 'Conversation',
       participantIds: participantIds,
       startedAt: DateTime.now(),
       lastMessageAt: DateTime.now(),
