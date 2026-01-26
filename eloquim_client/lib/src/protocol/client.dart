@@ -465,6 +465,13 @@ class EndpointUser extends _i2.EndpointRef {
     },
   );
 
+  /// Deletes the user account and all associated data.
+  _i3.Future<void> deleteAccount() => caller.callServerEndpoint<void>(
+    'user',
+    'deleteAccount',
+    {},
+  );
+
   /// Seed initial bots if they don't exist
   _i3.Future<void> seedBots() => caller.callServerEndpoint<void>(
     'user',

@@ -1,5 +1,5 @@
 //eloquim_server/lib/src/endpoints/user_endpoint.dart
-import 'package:serverpod/serverpod.dart';
+import 'package:serverpod/serverpod.dart' hide Message;
 import 'package:serverpod_auth_idp_server/core.dart';
 import '../generated/protocol.dart';
 
@@ -202,6 +202,56 @@ class UserEndpoint extends Endpoint {
     filtered.shuffle();
 
     return filtered.take(limit).toList();
+  }
+
+  /// Deletes the user account and all associated data.
+  Future<void> deleteAccount(Session session) async {
+    final authInfo = await session.authenticated;
+    if (authInfo == null) throw Exception('Not authenticated');
+    final authUserId = authInfo.authUserId;
+
+    // Find custom user
+    final user = await User.db.findFirstRow(
+      session,
+      where: (t) => t.authUserId.equals(authUserId),
+    );
+
+    if (user != null) {
+      // 1. Delete user's messages
+      await Message.db.deleteWhere(
+        session,
+        where: (t) => t.senderId.equals(user.id!),
+      );
+
+      // 2. Remove user from conversations
+      // Fetch all conversations where this user is a participant.
+      // Note: In a large-scale app, we might use a junction table or more efficient querying.
+      final conversations = await Conversation.db.find(session);
+      for (final conv in conversations) {
+        if (conv.participantIds.contains(user.id)) {
+          final updatedIds = conv.participantIds
+              .where((id) => id != user.id)
+              .toList();
+          if (updatedIds.isEmpty) {
+            await Conversation.db.deleteRow(session, conv);
+          } else {
+            await Conversation.db.updateRow(
+              session,
+              conv.copyWith(participantIds: updatedIds),
+            );
+          }
+        }
+      }
+
+      // 3. Delete the custom user record
+      await User.db.deleteRow(session, user);
+    }
+
+    // 4. Delete the auth user (this will also revoke tokens and delete auth tables entry)
+    await AuthServices.instance.authUsers.delete(
+      session,
+      authUserId: authUserId,
+    );
   }
 
   /// Seed initial bots if they don't exist

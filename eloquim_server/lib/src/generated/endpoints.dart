@@ -705,6 +705,17 @@ class Endpoints extends _i1.EndpointDispatch {
                 limit: params['limit'],
               ),
         ),
+        'deleteAccount': _i1.MethodConnector(
+          name: 'deleteAccount',
+          params: {},
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+              ) async => (endpoints['user'] as _i8.UserEndpoint).deleteAccount(
+                session,
+              ),
+        ),
         'seedBots': _i1.MethodConnector(
           name: 'seedBots',
           params: {},

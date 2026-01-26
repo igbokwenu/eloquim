@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 import '../../../core/providers/serverpod_client_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -9,6 +10,8 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(currentUserProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Settings'),
@@ -117,6 +120,65 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 8),
 
           ListTile(
+            leading: const Icon(Icons.lock_reset),
+            title: const Text('Reset Password'),
+            onTap: () async {
+              final email = userAsync.value?.email;
+
+              if (email == null) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('No email associated with this account'),
+                    ),
+                  );
+                }
+                return;
+              }
+
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Reset Password'),
+                  content: Text('Send a password reset email to $email?'),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('Cancel'),
+                    ),
+                    FilledButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      child: const Text('Send'),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirmed == true && context.mounted) {
+                try {
+                  final client = ref.read(serverpodClientProvider);
+                  await client.emailIdp.startPasswordReset(
+                    email: email,
+                  );
+                  // In a real app, you might navigate to a screen to enter the code
+                  // but for now, we just initiate the flow.
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Reset email sent!')),
+                    );
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error: $e')),
+                    );
+                  }
+                }
+              }
+            },
+          ),
+
+          ListTile(
             leading: const Icon(Icons.logout),
             title: const Text('Logout'),
             onTap: () async {
@@ -141,7 +203,7 @@ class SettingsScreen extends ConsumerWidget {
               if (confirmed == true && context.mounted) {
                 try {
                   final client = ref.read(serverpodClientProvider);
-                  await (client.modules as dynamic).auth.signOut();
+                  await client.auth.signOutDevice();
                   if (context.mounted) {
                     context.go('/welcome');
                   }
@@ -168,7 +230,7 @@ class SettingsScreen extends ConsumerWidget {
                 builder: (context) => AlertDialog(
                   title: const Text('Delete Account'),
                   content: const Text(
-                    'This action cannot be undone. All your data will be permanently deleted.',
+                    'This action cannot be undone. All your messages, matches, and profile data will be permanently deleted.',
                   ),
                   actions: [
                     TextButton(
@@ -179,21 +241,36 @@ class SettingsScreen extends ConsumerWidget {
                       onPressed: () => Navigator.pop(context, true),
                       style: FilledButton.styleFrom(
                         backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
                       ),
-                      child: const Text('Delete'),
+                      child: const Text('Delete Permanently'),
                     ),
                   ],
                 ),
               );
 
-              if (confirmed == true) {
-                // TODO: Implement account deletion
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Account deletion coming soon'),
-                    ),
-                  );
+              if (confirmed == true && context.mounted) {
+                try {
+                  final client = ref.read(serverpodClientProvider);
+                  // 1. Delete account data on server
+                  await client.user.deleteAccount();
+                  // 2. Sign out on client
+                  await client.auth.signOutDevice();
+
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Account deleted successfully'),
+                      ),
+                    );
+                    context.go('/welcome');
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error deleting account: $e')),
+                    );
+                  }
                 }
               }
             },

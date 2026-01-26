@@ -33,6 +33,7 @@ user:
   - getUser:
   - updateLastSeen:
   - findMatches:
+  - deleteAccount:
   - seedBots:
 greeting:
   - hello:
