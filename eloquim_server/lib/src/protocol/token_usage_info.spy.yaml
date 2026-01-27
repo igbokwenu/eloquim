@@ -1,0 +1,4 @@
+class: TokenUsageInfo
+fields:
+  totalTokens: int
+  lastCalls: List<TokenCallEntry>

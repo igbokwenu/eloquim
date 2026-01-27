@@ -320,7 +320,7 @@ class UserEndpoint extends Endpoint {
   }
 
   /// Gets token usage info for the current user
-  Future<Map<String, dynamic>> getTokenUsageInfo(Session session) async {
+  Future<TokenUsageInfo> getTokenUsageInfo(Session session) async {
     final authInfo = await session.authenticated;
     if (authInfo == null) throw Exception('Not authenticated');
 
@@ -339,18 +339,18 @@ class UserEndpoint extends Endpoint {
       limit: 5,
     );
 
-    return {
-      'totalTokens': user.totalTokenCount,
-      'lastCalls': logs
+    return TokenUsageInfo(
+      totalTokens: user.totalTokenCount,
+      lastCalls: logs
           .map(
-            (l) => {
-              'tokens': l.tokenCount,
-              'cost': l.estimatedCost,
-              'type': l.apiCallType,
-              'time': l.timestamp.toIso8601String(),
-            },
+            (l) => TokenCallEntry(
+              tokens: l.tokenCount,
+              cost: l.estimatedCost,
+              type: l.apiCallType,
+              time: l.timestamp,
+            ),
           )
           .toList(),
-    };
+    );
   }
 }

@@ -23,7 +23,8 @@ import 'package:eloquim_server/src/generated/persona.dart' as _i8;
 import 'package:eloquim_server/src/generated/recommendation_response.dart'
     as _i9;
 import 'package:eloquim_server/src/generated/user.dart' as _i10;
-import 'package:eloquim_server/src/generated/greetings/greeting.dart' as _i11;
+import 'package:eloquim_server/src/generated/token_usage_info.dart' as _i11;
+import 'package:eloquim_server/src/generated/greetings/greeting.dart' as _i12;
 import 'package:eloquim_server/src/generated/protocol.dart';
 import 'package:eloquim_server/src/generated/endpoints.dart';
 export 'package:serverpod_test/serverpod_test_public_exports.dart';
@@ -1278,7 +1279,7 @@ class _UserEndpoint {
     });
   }
 
-  _i3.Future<Map<String, dynamic>> getTokenUsageInfo(
+  _i3.Future<_i11.TokenUsageInfo> getTokenUsageInfo(
     _i1.TestSessionBuilder sessionBuilder,
   ) async {
     return _i1.callAwaitableFunctionAndHandleExceptions(() async {
@@ -1300,7 +1301,7 @@ class _UserEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<Map<String, dynamic>>);
+                as _i3.Future<_i11.TokenUsageInfo>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();
@@ -1319,7 +1320,7 @@ class _GreetingEndpoint {
 
   final _i2.SerializationManager _serializationManager;
 
-  _i3.Future<_i11.Greeting> hello(
+  _i3.Future<_i12.Greeting> hello(
     _i1.TestSessionBuilder sessionBuilder,
     String name,
   ) async {
@@ -1342,7 +1343,7 @@ class _GreetingEndpoint {
                   _localUniqueSession,
                   _localCallContext.arguments,
                 )
-                as _i3.Future<_i11.Greeting>);
+                as _i3.Future<_i12.Greeting>);
         return _localReturnValue;
       } finally {
         await _localUniqueSession.close();

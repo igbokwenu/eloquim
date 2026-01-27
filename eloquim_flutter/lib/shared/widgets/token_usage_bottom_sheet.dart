@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:eloquim_client/eloquim_client.dart';
 import '../../core/providers/serverpod_client_provider.dart';
 
 class TokenUsageBottomSheet extends ConsumerWidget {
@@ -24,7 +25,7 @@ class TokenUsageBottomSheet extends ConsumerWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       padding: const EdgeInsets.all(24),
-      child: FutureBuilder<Map<String, dynamic>>(
+      child: FutureBuilder<TokenUsageInfo>(
         future: client.user.getTokenUsageInfo(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -41,9 +42,9 @@ class TokenUsageBottomSheet extends ConsumerWidget {
             );
           }
 
-          final data = snapshot.data!;
-          final totalTokens = data['totalTokens'] as int;
-          final lastCalls = data['lastCalls'] as List;
+          final usageInfo = snapshot.data!;
+          final totalTokens = usageInfo.totalTokens;
+          final lastCalls = usageInfo.lastCalls;
 
           return Column(
             mainAxisSize: MainAxisSize.min,
@@ -122,11 +123,11 @@ class TokenUsageBottomSheet extends ConsumerWidget {
     );
   }
 
-  Widget _buildCallItem(Map<String, dynamic> call) {
-    final type = call['type'] as String;
-    final tokens = call['tokens'] as int;
-    final cost = call['cost'] as double;
-    final time = DateTime.parse(call['time'] as String);
+  Widget _buildCallItem(TokenCallEntry call) {
+    final type = call.type;
+    final tokens = call.tokens;
+    final cost = call.cost;
+    final time = call.time;
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),

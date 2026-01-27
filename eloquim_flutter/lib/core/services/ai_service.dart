@@ -68,12 +68,12 @@ class AIService {
       
       Task:
       1. Translate the emoji sequence into EXPRESSIVE TEXT matching the tone and persona. 
-         CRITICAL: The translation MUST BE TEXT, not emojis.
+         CRITICAL: The 'text' MUST BE PURELY NATURAL LANGUAGE, NO EMOJIS ALLOWED in this field.
       2. Suggest 4-6 "quick response" emojis that the RECEIVER would likely use to reply. 
       
       Return ONLY a JSON object:
       {
-        "text": "the translation in plain text",
+        "text": "the translation in natural language without emojis",
         "confidence": 0.95,
         "recommendations": ["😊", "🔥", "🤕", "💯", "👍"]
       }
@@ -226,7 +226,18 @@ class AIService {
       // Convert response into Eloquim message data
       final result = await _model.generateContent([
         Content.text(
-          "Convert this natural response into an Eloquim message. Input: \"$botResponseText\"\n\nReturn JSON ONLY:\n{\n  \"emojis\": [\"suggested\", \"emoji\", \"sequence\"],\n  \"text\": \"the natural response string\",\n  \"recommendations\": [\"5-8\", \"emojis\", \"for\", \"user\", \"to\", \"reply\"]\n}",
+          "Convert this natural response into an Eloquim message object. \n"
+          "Input: \"$botResponseText\"\n\n"
+          "Rules:\n"
+          "1. 'text' field MUST be purely natural language text. NO EMOJIS.\n"
+          "2. 'emojis' field MUST be a List of 1-3 emojis that represent the gist of the text.\n"
+          "3. 'recommendations' field MUST be 4-6 appropriate reply emojis for the user.\n\n"
+          "Return JSON ONLY:\n"
+          "{\n"
+          "  \"emojis\": [\"👋\", \"😊\"],\n"
+          "  \"text\": \"the natural textual response\",\n"
+          "  \"recommendations\": [\"😊\", \"🔥\", \"✨\", \"👍\"]\n"
+          "}",
         ),
       ]);
 

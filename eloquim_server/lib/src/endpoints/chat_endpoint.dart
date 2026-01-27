@@ -3,7 +3,6 @@ import 'package:serverpod/serverpod.dart'
     hide Message; // FIX: Hide Serverpod's internal Message class
 import 'package:serverpod_auth_idp_server/core.dart';
 import '../generated/protocol.dart';
-import '../services/ai_translation_service.dart';
 
 class ChatEndpoint extends Endpoint {
   /// Send a message with emoji translation
@@ -28,29 +27,14 @@ class ChatEndpoint extends Endpoint {
     final userId = user.id!;
 
     try {
-      // 2. Get conversation context
-      final contextMessages = await Message.db.find(
-        session,
-        where: (t) => t.conversationId.equals(request.conversationId),
-        orderBy: (t) => t.createdAt,
-        orderDescending: true,
-        limit: 6,
-      );
-
-      // 3. Call AI translation service (if not already translated by client)
+      // 3. Use client-provided translation
       String translatedText = request.translatedText ?? '';
       double confidenceScore = request.confidenceScore ?? 0.0;
 
       if (translatedText.isEmpty) {
-        final aiService = AITranslationService(session);
-        final translation = await aiService.translateEmojis(
-          emojiSequence: request.emojiSequence,
-          tone: request.tone,
-          personaId: request.personaId,
-          conversationContext: contextMessages.reversed.toList(),
-        );
-        translatedText = translation.text;
-        confidenceScore = translation.confidence;
+        // Fallback if client failed to translate
+        translatedText = request.emojiSequence.join(' ');
+        confidenceScore = 0.5;
       }
 
       // 4. Create message

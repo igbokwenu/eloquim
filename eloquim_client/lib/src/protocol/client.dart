@@ -23,8 +23,9 @@ import 'package:eloquim_client/src/protocol/persona.dart' as _i8;
 import 'package:eloquim_client/src/protocol/recommendation_response.dart'
     as _i9;
 import 'package:eloquim_client/src/protocol/user.dart' as _i10;
-import 'package:eloquim_client/src/protocol/greetings/greeting.dart' as _i11;
-import 'protocol.dart' as _i12;
+import 'package:eloquim_client/src/protocol/token_usage_info.dart' as _i11;
+import 'package:eloquim_client/src/protocol/greetings/greeting.dart' as _i12;
+import 'protocol.dart' as _i13;
 
 /// {@category Endpoint}
 class EndpointEmailIdp extends _i1.EndpointEmailIdpBase {
@@ -495,8 +496,8 @@ class EndpointUser extends _i2.EndpointRef {
   );
 
   /// Gets token usage info for the current user
-  _i3.Future<Map<String, dynamic>> getTokenUsageInfo() =>
-      caller.callServerEndpoint<Map<String, dynamic>>(
+  _i3.Future<_i11.TokenUsageInfo> getTokenUsageInfo() =>
+      caller.callServerEndpoint<_i11.TokenUsageInfo>(
         'user',
         'getTokenUsageInfo',
         {},
@@ -513,8 +514,8 @@ class EndpointGreeting extends _i2.EndpointRef {
   String get name => 'greeting';
 
   /// Returns a personalized greeting message: "Hello {name}".
-  _i3.Future<_i11.Greeting> hello(String name) =>
-      caller.callServerEndpoint<_i11.Greeting>(
+  _i3.Future<_i12.Greeting> hello(String name) =>
+      caller.callServerEndpoint<_i12.Greeting>(
         'greeting',
         'hello',
         {'name': name},
@@ -552,7 +553,7 @@ class Client extends _i2.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
          host,
-         _i12.Protocol(),
+         _i13.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,

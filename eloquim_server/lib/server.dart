@@ -25,9 +25,15 @@ void run(List<String> args) async {
   final smtpPassword = pod.getPassword('smtpPassword');
 
   if (smtpEmail != null && smtpPassword != null) {
-    _smtpServer = gmail(smtpEmail, smtpPassword);
+    // FIX: Using custom SMTP server instead of hardcoded Gmail
+    _smtpServer = SmtpServer(
+      'habilisfusion.co',
+      port: 465,
+      ssl: true,
+      username: smtpEmail,
+      password: smtpPassword,
+    );
   } else {
-    // FIX 2: Use print instead of pod.log for startup messages
     print(
       'WARNING: SMTP credentials not found in passwords.yaml. Emails will be logged to console.',
     );

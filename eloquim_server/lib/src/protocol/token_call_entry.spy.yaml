@@ -1,0 +1,6 @@
+class: TokenCallEntry
+fields:
+  tokens: int
+  cost: double
+  type: String
+  time: DateTime

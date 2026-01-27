@@ -25,12 +25,14 @@ import 'persona.dart' as _i10;
 import 'recommendation_response.dart' as _i11;
 import 'send_message_request.dart' as _i12;
 import 'system_notification.dart' as _i13;
-import 'token_log.dart' as _i14;
-import 'user.dart' as _i15;
-import 'package:eloquim_server/src/generated/message.dart' as _i16;
-import 'package:eloquim_server/src/generated/conversation.dart' as _i17;
-import 'package:eloquim_server/src/generated/persona.dart' as _i18;
-import 'package:eloquim_server/src/generated/user.dart' as _i19;
+import 'token_call_entry.dart' as _i14;
+import 'token_log.dart' as _i15;
+import 'token_usage_info.dart' as _i16;
+import 'user.dart' as _i17;
+import 'package:eloquim_server/src/generated/message.dart' as _i18;
+import 'package:eloquim_server/src/generated/conversation.dart' as _i19;
+import 'package:eloquim_server/src/generated/persona.dart' as _i20;
+import 'package:eloquim_server/src/generated/user.dart' as _i21;
 export 'conversation.dart';
 export 'emoji_combo.dart';
 export 'emoji_mapping.dart';
@@ -40,7 +42,9 @@ export 'persona.dart';
 export 'recommendation_response.dart';
 export 'send_message_request.dart';
 export 'system_notification.dart';
+export 'token_call_entry.dart';
 export 'token_log.dart';
+export 'token_usage_info.dart';
 export 'user.dart';
 
 class Protocol extends _i1.SerializationManagerServer {
@@ -823,11 +827,17 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i13.SystemNotification) {
       return _i13.SystemNotification.fromJson(data) as T;
     }
-    if (t == _i14.TokenLog) {
-      return _i14.TokenLog.fromJson(data) as T;
+    if (t == _i14.TokenCallEntry) {
+      return _i14.TokenCallEntry.fromJson(data) as T;
     }
-    if (t == _i15.User) {
-      return _i15.User.fromJson(data) as T;
+    if (t == _i15.TokenLog) {
+      return _i15.TokenLog.fromJson(data) as T;
+    }
+    if (t == _i16.TokenUsageInfo) {
+      return _i16.TokenUsageInfo.fromJson(data) as T;
+    }
+    if (t == _i17.User) {
+      return _i17.User.fromJson(data) as T;
     }
     if (t == _i1.getType<_i5.Conversation?>()) {
       return (data != null ? _i5.Conversation.fromJson(data) : null) as T;
@@ -859,11 +869,17 @@ class Protocol extends _i1.SerializationManagerServer {
       return (data != null ? _i13.SystemNotification.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i14.TokenLog?>()) {
-      return (data != null ? _i14.TokenLog.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i14.TokenCallEntry?>()) {
+      return (data != null ? _i14.TokenCallEntry.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i15.User?>()) {
-      return (data != null ? _i15.User.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i15.TokenLog?>()) {
+      return (data != null ? _i15.TokenLog.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i16.TokenUsageInfo?>()) {
+      return (data != null ? _i16.TokenUsageInfo.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i17.User?>()) {
+      return (data != null ? _i17.User.fromJson(data) : null) as T;
     }
     if (t == List<int>) {
       return (data as List).map((e) => deserialize<int>(e)).toList() as T;
@@ -881,31 +897,31 @@ class Protocol extends _i1.SerializationManagerServer {
       return (data as List).map((e) => deserialize<_i6.EmojiCombo>(e)).toList()
           as T;
     }
-    if (t == List<_i16.Message>) {
-      return (data as List).map((e) => deserialize<_i16.Message>(e)).toList()
+    if (t == List<_i14.TokenCallEntry>) {
+      return (data as List)
+              .map((e) => deserialize<_i14.TokenCallEntry>(e))
+              .toList()
           as T;
     }
-    if (t == List<_i17.Conversation>) {
+    if (t == List<_i18.Message>) {
+      return (data as List).map((e) => deserialize<_i18.Message>(e)).toList()
+          as T;
+    }
+    if (t == List<_i19.Conversation>) {
       return (data as List)
-              .map((e) => deserialize<_i17.Conversation>(e))
+              .map((e) => deserialize<_i19.Conversation>(e))
               .toList()
           as T;
     }
     if (t == List<int>) {
       return (data as List).map((e) => deserialize<int>(e)).toList() as T;
     }
-    if (t == List<_i18.Persona>) {
-      return (data as List).map((e) => deserialize<_i18.Persona>(e)).toList()
+    if (t == List<_i20.Persona>) {
+      return (data as List).map((e) => deserialize<_i20.Persona>(e)).toList()
           as T;
     }
-    if (t == List<_i19.User>) {
-      return (data as List).map((e) => deserialize<_i19.User>(e)).toList() as T;
-    }
-    if (t == Map<String, dynamic>) {
-      return (data as Map).map(
-            (k, v) => MapEntry(deserialize<String>(k), deserialize<dynamic>(v)),
-          )
-          as T;
+    if (t == List<_i21.User>) {
+      return (data as List).map((e) => deserialize<_i21.User>(e)).toList() as T;
     }
     try {
       return _i3.Protocol().deserialize<T>(data, t);
@@ -930,8 +946,10 @@ class Protocol extends _i1.SerializationManagerServer {
       _i11.RecommendationResponse => 'RecommendationResponse',
       _i12.SendMessageRequest => 'SendMessageRequest',
       _i13.SystemNotification => 'SystemNotification',
-      _i14.TokenLog => 'TokenLog',
-      _i15.User => 'User',
+      _i14.TokenCallEntry => 'TokenCallEntry',
+      _i15.TokenLog => 'TokenLog',
+      _i16.TokenUsageInfo => 'TokenUsageInfo',
+      _i17.User => 'User',
       _ => null,
     };
   }
@@ -964,9 +982,13 @@ class Protocol extends _i1.SerializationManagerServer {
         return 'SendMessageRequest';
       case _i13.SystemNotification():
         return 'SystemNotification';
-      case _i14.TokenLog():
+      case _i14.TokenCallEntry():
+        return 'TokenCallEntry';
+      case _i15.TokenLog():
         return 'TokenLog';
-      case _i15.User():
+      case _i16.TokenUsageInfo():
+        return 'TokenUsageInfo';
+      case _i17.User():
         return 'User';
     }
     className = _i2.Protocol().getClassNameForObject(data);
@@ -1017,11 +1039,17 @@ class Protocol extends _i1.SerializationManagerServer {
     if (dataClassName == 'SystemNotification') {
       return deserialize<_i13.SystemNotification>(data['data']);
     }
+    if (dataClassName == 'TokenCallEntry') {
+      return deserialize<_i14.TokenCallEntry>(data['data']);
+    }
     if (dataClassName == 'TokenLog') {
-      return deserialize<_i14.TokenLog>(data['data']);
+      return deserialize<_i15.TokenLog>(data['data']);
+    }
+    if (dataClassName == 'TokenUsageInfo') {
+      return deserialize<_i16.TokenUsageInfo>(data['data']);
     }
     if (dataClassName == 'User') {
-      return deserialize<_i15.User>(data['data']);
+      return deserialize<_i17.User>(data['data']);
     }
     if (dataClassName.startsWith('serverpod.')) {
       data['className'] = dataClassName.substring(10);
@@ -1067,10 +1095,10 @@ class Protocol extends _i1.SerializationManagerServer {
         return _i9.Message.t;
       case _i10.Persona:
         return _i10.Persona.t;
-      case _i14.TokenLog:
-        return _i14.TokenLog.t;
-      case _i15.User:
-        return _i15.User.t;
+      case _i15.TokenLog:
+        return _i15.TokenLog.t;
+      case _i17.User:
+        return _i17.User.t;
     }
     return null;
   }
