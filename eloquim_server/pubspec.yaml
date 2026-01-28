@@ -27,4 +27,4 @@ serverpod:
     # Unfortunately, we can't use the `-o` flag directly because of an error
     # that happens on windows. Issue is tracked in the flutter
     # repository here: https://github.com/flutter/flutter/issues/157886
-    flutter_build: cd ../eloquim_flutter && flutter build web --base-href /app/ && rm -rf ../eloquim_server/web/app && mv build/web/ ../eloquim_server/web/app
+    flutter_build: cd ../eloquim_flutter && flutter build web --base-href /app/ --wasm && rm -rf ../eloquim_server/web/app && mv build/web/ ../eloquim_server/web/app

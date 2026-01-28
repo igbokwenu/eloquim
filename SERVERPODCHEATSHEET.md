@@ -114,7 +114,7 @@ scloud password list
 scloud secret list
 
 # View specific build log
-scloud deployment build-log b6a6b90f-a5a9-4415-b65b-269ef13d0158
+scloud deployment build-log 923a5286-c937-46fd-90a2-a23d78025c31
 
 # View logs since hours past
 scloud log 10m
@@ -123,3 +123,16 @@ scloud log --since 1h
 
 # Deploy
 scloud deploy
+
+Febugging:
+
+scloud deploy --dry-run --verbose
+
+scloud deploy --show-files
+
+scloud deployment show 923a5286-c937-46fd-90a2-a23d78025c31
+scloud deployment build-log 0
+scloud deployment build-log 923a5286-c937-46fd-90a2-a23d78025c31
+
+scloud deployment list
+
