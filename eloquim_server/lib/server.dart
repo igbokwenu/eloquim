@@ -161,8 +161,8 @@ Future<void> _sendEmail(
         body: jsonEncode({
           // IMPORTANT: If you haven't verified 'habilisfusion.co' on Resend yet,
           // you MUST use 'onboarding@resend.dev' as the 'from' address.
-          // If you HAVE verified it, you can use 'eloquim@habilisfusion.co'
-          'from': 'Eloquim <onboarding@resend.dev>',
+          // If you HAVE verified it, you can use 'eloquim@anectoalhq.com'
+          'from': 'Eloquim <eloquim@anectoalhq.com>',
           'to': [to],
           'subject': subject,
           'html': '<p>$text</p>',
