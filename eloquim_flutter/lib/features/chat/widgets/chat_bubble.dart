@@ -92,33 +92,35 @@ class ChatBubble extends ConsumerWidget {
   void _showTranslationDetails(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('👻 Ghost Translation'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildDetailRow('Emojis', message.emojiSequence.join(' ')),
-            const SizedBox(height: 8),
-            if (message.rawIntent != null)
-              _buildDetailRow('Raw Intent', message.rawIntent!),
-            const SizedBox(height: 8),
-            _buildDetailRow('Translated', message.translatedText),
-            const SizedBox(height: 8),
-            _buildDetailRow('Tone', message.tone),
-            const SizedBox(height: 8),
-            _buildDetailRow(
-              'Confidence',
-              '${(message.confidenceScore * 100).toStringAsFixed(1)}%',
+      builder: (context) => SelectionArea(
+        child: AlertDialog(
+          title: const Text('👻 Ghost Translation'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildDetailRow('Emojis', message.emojiSequence.join(' ')),
+              const SizedBox(height: 8),
+              if (message.rawIntent != null)
+                _buildDetailRow('Raw Intent', message.rawIntent!),
+              const SizedBox(height: 8),
+              _buildDetailRow('Translated', message.translatedText),
+              const SizedBox(height: 8),
+              _buildDetailRow('Tone', message.tone),
+              const SizedBox(height: 8),
+              _buildDetailRow(
+                'Confidence',
+                '${(message.confidenceScore * 100).toStringAsFixed(1)}%',
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
       ),
     );
   }

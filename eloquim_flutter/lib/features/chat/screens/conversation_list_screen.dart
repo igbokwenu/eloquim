@@ -17,6 +17,12 @@ class ConversationListScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Eloquim'),
         actions: [
+          TextButton.icon(
+            onPressed: () => context.push('/find-match'),
+            icon: const Icon(Icons.person_add_outlined),
+            label: const Text('New Match'),
+            style: TextButton.styleFrom(foregroundColor: Colors.white),
+          ),
           IconButton(
             icon: const Icon(Icons.info_outline),
             onPressed: () => TokenUsageBottomSheet.show(context),

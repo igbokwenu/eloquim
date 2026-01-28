@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:http/http.dart' as http;
 import 'package:serverpod/serverpod.dart';
 import 'package:serverpod_auth_idp_server/core.dart';
 import 'package:serverpod_auth_idp_server/providers/email.dart';
@@ -142,24 +144,44 @@ Future<void> _sendEmail(
   required String subject,
   required String text,
 }) async {
-  if (_smtpServer != null) {
-    // FIX 3: Use the prefixed 'mail.Message'
-    final message = mail.Message()
-      ..from = mail.Address(_smtpServer!.username!, 'Eloquim Bot')
-      ..recipients.add(to)
-      ..subject = subject
-      ..text = text;
+  // 1. Get API Key from Secrets (injected as env var)
+  final apiKey = Platform.environment['RESEND_API_KEY'];
 
+  if (apiKey != null) {
     try {
-      final sendReport = await mail.send(message, _smtpServer!);
-      session.log('Email sent to $to: ${sendReport.toString()}');
+      final uri = Uri.parse('https://api.resend.com/emails');
+
+      final response = await http.post(
+        uri,
+        headers: {
+          'Authorization': 'Bearer $apiKey',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          // Until you verify your domain on Resend, use 'onboarding@resend.dev'
+          // Once verified, use 'eloquim@habilisfusion.co'
+          'from': 'Eloquim <onboarding@resend.dev>',
+          'to': [to],
+          'subject': subject,
+          'html': '<p>$text</p>', // Simple HTML wrapper
+        }),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        session.log('Email sent via Resend to $to');
+      } else {
+        session.log(
+          'Failed to send email via Resend: ${response.body}',
+          level: LogLevel.error,
+        );
+      }
     } catch (e) {
-      session.log('Failed to send email to $to: $e', level: LogLevel.error);
+      session.log('Error calling Resend API: $e', level: LogLevel.error);
     }
   } else {
-    // Fallback logging
+    // Local Development Fallback (Log to console)
     session.log('--------------------------------------------------');
-    session.log('EMAIL SIMULATION to: $to');
+    session.log('EMAIL SIMULATION (No API Key) to: $to');
     session.log('Subject: $subject');
     session.log('Content: $text');
     session.log('--------------------------------------------------');

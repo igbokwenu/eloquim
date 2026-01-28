@@ -72,7 +72,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ),
       body: chatAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('Error: $error')),
+        error: (error, stack) =>
+            Center(child: SelectionArea(child: Text('Error: $error'))),
         data: (chatState) {
           // Scroll to bottom when new messages arrive
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -85,43 +86,47 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               Expanded(
                 child: chatState.messages.isEmpty
                     ? const Center(
-                        child: Text(
-                          'Start the conversation! 👋\nUse the emoji keyboard below.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 18),
+                        child: SelectionArea(
+                          child: Text(
+                            'Start the conversation! 👋\nUse the emoji keyboard below.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 18),
+                          ),
                         ),
                       )
-                    : ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.all(8),
-                        itemCount:
-                            chatState.messages.length +
-                            (chatState.isTyping ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          if (index == chatState.messages.length) {
-                            return const Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Row(
-                                children: [
-                                  SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
+                    : SelectionArea(
+                        child: ListView.builder(
+                          controller: _scrollController,
+                          padding: const EdgeInsets.all(8),
+                          itemCount:
+                              chatState.messages.length +
+                              (chatState.isTyping ? 1 : 0),
+                          itemBuilder: (context, index) {
+                            if (index == chatState.messages.length) {
+                              return const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
                                     ),
-                                  ),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'Eloquim is thinking...',
-                                    style: TextStyle(color: Colors.grey),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }
-                          final message = chatState.messages[index];
-                          return ChatBubble(message: message);
-                        },
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Eloquim is thinking...',
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+                            final message = chatState.messages[index];
+                            return ChatBubble(message: message);
+                          },
+                        ),
                       ),
               ),
 
