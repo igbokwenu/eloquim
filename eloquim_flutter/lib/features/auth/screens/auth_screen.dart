@@ -28,10 +28,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 children: [
                   const SizedBox(height: 40),
                   // App branding
-                  const Text(
-                    '✨💬✨',
-                    style: TextStyle(fontSize: 60),
-                    textAlign: TextAlign.center,
+                  Center(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: Image.asset(
+                        'assets/images/eloquim_logo.jpg',
+                        width: 120,
+                        height: 120,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 16),
                   const Text(

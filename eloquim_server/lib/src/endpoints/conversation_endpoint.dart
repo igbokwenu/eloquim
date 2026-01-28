@@ -52,6 +52,27 @@ class ConversationEndpoint extends Endpoint {
       participantIds.add(userId);
     }
 
+    // Sort to ensure consistent matching check
+    participantIds.sort();
+
+    // Check if a P2P conversation already exists
+    if (participantIds.length == 2) {
+      final allConversations = await Conversation.db.find(
+        session,
+        where: (t) => t.status.equals('active'),
+      );
+
+      for (var existing in allConversations) {
+        if (existing.participantIds.length == 2) {
+          final existingIds = List<int>.from(existing.participantIds)..sort();
+          if (existingIds[0] == participantIds[0] &&
+              existingIds[1] == participantIds[1]) {
+            return existing;
+          }
+        }
+      }
+    }
+
     String? effectiveTitle = title;
     if (effectiveTitle == null && participantIds.length == 2) {
       final otherId = participantIds.firstWhere((id) => id != userId);

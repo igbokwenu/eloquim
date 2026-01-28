@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:eloquim_client/eloquim_client.dart';
 import '../providers/conversation_provider.dart';
+import '../../../core/providers/serverpod_client_provider.dart';
 import '../../../shared/widgets/token_usage_bottom_sheet.dart';
 
 class ConversationListScreen extends ConsumerWidget {
@@ -72,25 +73,74 @@ class ConversationListScreen extends ConsumerWidget {
   }
 }
 
-class _ConversationCard extends StatelessWidget {
+class _ConversationCard extends ConsumerWidget {
   final Conversation conversation;
 
   const _ConversationCard({required this.conversation});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentUserAsync = ref.watch(currentUserProvider);
+    final currentUser = currentUserAsync.asData?.value;
+
+    String? displayTitle = conversation.title;
+    int? otherId;
+
+    if (conversation.type == 'p2p' && currentUser != null) {
+      otherId = conversation.participantIds.firstWhere(
+        (id) => id != currentUser.id,
+        orElse: () => -1,
+      );
+    }
+
+    final otherUserAsync = otherId != null && otherId != -1
+        ? ref.watch(userProvider(otherId))
+        : const AsyncValue.data(null);
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey.withOpacity(0.1)),
+      ),
       child: ListTile(
         leading: CircleAvatar(
-          child: Text(conversation.title?[0] ?? '?'),
+          backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+          child: otherUserAsync.when(
+            data: (user) => Text(user?.username[0] ?? displayTitle?[0] ?? '?'),
+            loading: () => const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            error: (_, __) => Text(displayTitle?[0] ?? '?'),
+          ),
         ),
-        title: Text(conversation.title ?? 'Conversation'),
-        subtitle: Text(
-          _formatTime(conversation.lastMessageAt),
-          style: const TextStyle(fontSize: 12),
+        title: otherUserAsync.when(
+          data: (user) {
+            final name = user?.username ?? displayTitle ?? 'Conversation';
+            final botSuffix = (user?.isBot ?? false) ? ' (AI Bot)' : '';
+            return Text(
+              '$name$botSuffix',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            );
+          },
+          loading: () => Text(displayTitle ?? 'Loading...'),
+          error: (_, __) => Text(displayTitle ?? 'Conversation'),
         ),
-        trailing: const Icon(Icons.chevron_right),
+        subtitle: Row(
+          children: [
+            Text(
+              _formatTime(conversation.lastMessageAt),
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+            ),
+            const Spacer(),
+            if (conversation.status == 'archived')
+              const Icon(Icons.archive_outlined, size: 14, color: Colors.grey),
+          ],
+        ),
+        trailing: const Icon(Icons.chevron_right, size: 20),
         onTap: () {
           context.push('/chat/${conversation.id}');
         },
@@ -105,6 +155,7 @@ class _ConversationCard extends StatelessWidget {
     if (diff.inMinutes < 1) return 'Just now';
     if (diff.inHours < 1) return '${diff.inMinutes}m ago';
     if (diff.inDays < 1) return '${diff.inHours}h ago';
-    return '${diff.inDays}d ago';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    return '${time.day}/${time.month}/${time.year}';
   }
 }

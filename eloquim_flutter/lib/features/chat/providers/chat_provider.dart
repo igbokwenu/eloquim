@@ -58,17 +58,21 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
   @override
   Future<ChatState> build() async {
     _client = ref.read(serverpodClientProvider);
-    _conversationId = ref.read(currentConversationIdProvider);
+    // Use watch to rebuild when ID changes
+    _conversationId = ref.watch(currentConversationIdProvider);
 
     if (_conversationId == null) {
       return const ChatState();
     }
 
     try {
+      // Show loading indicator
+      state = const AsyncLoading();
+
       // Load initial messages
       final messages = await _client.chat.getMessages(
         _conversationId!,
-        limit: 20,
+        limit: 50, // Increased limit for better history
       );
 
       // Subscribe to real-time updates
@@ -188,31 +192,35 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
   void _subscribeToMessages() {
     if (_conversationId == null) return;
 
+    // Ensure connection is open
+    unawaited(_client.openStreamingConnection());
+
+    _messageSubscription?.cancel();
     _messageSubscription = _client.chat
         .streamChat(_conversationId!)
         .listen(
           (message) async {
             final currentState = state.asData?.value ?? const ChatState();
 
+            // Prevent duplicates
             if (!currentState.messages.any((m) => m.id == message.id)) {
               state = AsyncData(
                 currentState.copyWith(
                   messages: [...currentState.messages, message],
                 ),
               );
-
-              // Check if we should trigger a bot response
-
-              // Only trigger from stream if it's a message from someone ELSE
-              // (In case of human partners, we don't trigger AI.
-              // If it's a bot, the bot's own message doesn't trigger another reply).
-              // The primary trigger for bots is when the CURRENT user sends a message.
             }
           },
           onError: (error) {
-            final currentState = state.asData?.value ?? const ChatState();
-            state = AsyncData(currentState.copyWith(error: error.toString()));
+            debugPrint('Chat stream error: $error');
+            // Attempt to reconnect after a delay
+            Future.delayed(const Duration(seconds: 2), () {
+              if (state.hasValue && _conversationId != null) {
+                _subscribeToMessages();
+              }
+            });
           },
+          cancelOnError: false,
         );
   }
 

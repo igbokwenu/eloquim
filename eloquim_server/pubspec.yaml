@@ -21,7 +21,6 @@ serverpod:
   scripts:
     # Starts the server and applies migrations
     start: dart bin/main.dart --apply-migrations
-
     # Build the Flutter web app and move it to the server's web directory
     #
     # Unfortunately, we can't use the `-o` flag directly because of an error

@@ -55,6 +55,15 @@ class AIService {
     required User sender,
     List<Message> context = const [],
   }) async {
+    if (emojiSequence.isEmpty) {
+      return {
+        "text": "",
+        "confidence": 1.0,
+        "recommendations": ["🤔", "❓", "👋"],
+        "totalTokens": 0,
+      };
+    }
+
     final prompt =
         '''
       Translate this emoji sequence from ${sender.username}: ${emojiSequence.join('')}
@@ -79,26 +88,32 @@ class AIService {
       }
     ''';
 
-    try {
-      final response = await _model.generateContent([Content.text(prompt)]);
-      final text = response.text ?? '';
-      final usage = response.usageMetadata;
+    int retries = 2;
+    while (retries > 0) {
+      try {
+        final response = await _model.generateContent([Content.text(prompt)]);
+        final text = response.text ?? '';
+        final usage = response.usageMetadata;
 
-      final jsonStart = text.indexOf('{');
-      final jsonEnd = text.lastIndexOf('}') + 1;
-      if (jsonStart != -1 && jsonEnd != -1) {
-        final cleanJson = text.substring(jsonStart, jsonEnd);
-        final data = jsonDecode(cleanJson);
-        data['totalTokens'] = usage?.totalTokenCount ?? 0;
-        return data;
+        final jsonStart = text.indexOf('{');
+        final jsonEnd = text.lastIndexOf('}') + 1;
+        if (jsonStart != -1 && jsonEnd != -1) {
+          final cleanJson = text.substring(jsonStart, jsonEnd);
+          final data = jsonDecode(cleanJson);
+          data['totalTokens'] = usage?.totalTokenCount ?? 0;
+          return data;
+        }
+      } catch (e) {
+        debugPrint('AI Translation Error (Retries left: ${retries - 1}): $e');
+        retries--;
+        if (retries > 0)
+          await Future.delayed(const Duration(milliseconds: 500));
       }
-    } catch (e) {
-      debugPrint('AI Translation Error: $e');
     }
 
     return {
-      "text": emojiSequence.join(' '),
-      "confidence": 0.5,
+      "text": "Sent ${emojiSequence.join('')}", // Better fallback
+      "confidence": 0.0,
       "recommendations": ["😊", "👍", "👋"],
       "totalTokens": 0,
     };

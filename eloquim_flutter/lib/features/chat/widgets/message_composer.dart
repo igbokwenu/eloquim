@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:eloquim_client/eloquim_client.dart';
+import '../../../core/providers/serverpod_client_provider.dart';
 import '../../../shared/constants/tone_constants.dart';
 
 class MessageComposer extends ConsumerStatefulWidget {
@@ -102,8 +103,15 @@ class _MessageComposerState extends ConsumerState<MessageComposer> {
 
   @override
   Widget build(BuildContext context) {
-    final lastMessage = widget.history.isNotEmpty ? widget.history.last : null;
-    final recommendedEmojis = lastMessage?.recommendedEmojis ?? [];
+    // Find last message from the partner for recommendations
+    final currentUserAsync = ref.watch(currentUserProvider);
+    final currentUser = currentUserAsync.asData?.value;
+
+    final lastPartnerMessage = widget.history.reversed
+        .where((m) => m.senderId != currentUser?.id)
+        .firstOrNull;
+
+    final recommendedEmojis = lastPartnerMessage?.recommendedEmojis ?? [];
 
     return Container(
       decoration: BoxDecoration(
@@ -126,8 +134,20 @@ class _MessageComposerState extends ConsumerState<MessageComposer> {
             const Divider(height: 1),
 
             // Recommended Emojis (Quick Responses)
-            if (recommendedEmojis.isNotEmpty)
+            if (recommendedEmojis.isNotEmpty) ...[
+              const Padding(
+                padding: EdgeInsets.only(top: 8.0),
+                child: Text(
+                  '✨ Suggested Quick Responses',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.blue,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
               _buildRecommendedRow(recommendedEmojis),
+            ],
 
             // Selected Emojis Preview
             _buildSelectedEmojisRow(),
@@ -302,15 +322,27 @@ class _MessageComposerState extends ConsumerState<MessageComposer> {
   }
 
   Widget _buildSendButton() {
+    // Check if we are currently sending (optimistically added message with negative ID)
+    final isSending = widget.history.any((m) => m.id != null && m.id! < 0);
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: SizedBox(
         width: double.infinity,
         height: 50,
         child: FilledButton.icon(
-          onPressed: selectedEmojis.isEmpty ? null : _handleSend,
-          icon: const Icon(Icons.send),
-          label: const Text('Send Emojis'),
+          onPressed: (selectedEmojis.isEmpty || isSending) ? null : _handleSend,
+          icon: isSending
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
+                )
+              : const Icon(Icons.send),
+          label: Text(isSending ? 'Creating Soul Packet...' : 'Send Emojis'),
           style: FilledButton.styleFrom(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),

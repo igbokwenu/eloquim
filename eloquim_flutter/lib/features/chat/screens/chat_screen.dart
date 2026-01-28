@@ -103,21 +103,25 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                               (chatState.isTyping ? 1 : 0),
                           itemBuilder: (context, index) {
                             if (index == chatState.messages.length) {
-                              return const Padding(
-                                padding: EdgeInsets.all(8.0),
+                              return Padding(
+                                padding: const EdgeInsets.all(8.0),
                                 child: Row(
                                   children: [
-                                    SizedBox(
+                                    const SizedBox(
                                       width: 20,
                                       height: 20,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
                                       ),
                                     ),
-                                    SizedBox(width: 8),
+                                    const SizedBox(width: 8),
                                     Text(
-                                      'Eloquim is thinking...',
-                                      style: TextStyle(color: Colors.grey),
+                                      '✨ Creating Soul Packet...',
+                                      style: TextStyle(
+                                        color: Theme.of(context).primaryColor,
+                                        fontWeight: FontWeight.bold,
+                                        fontStyle: FontStyle.italic,
+                                      ),
                                     ),
                                   ],
                                 ),

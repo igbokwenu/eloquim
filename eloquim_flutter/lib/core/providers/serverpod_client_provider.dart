@@ -109,3 +109,13 @@ final isAuthenticatedProvider = StreamProvider<bool>((ref) {
     };
   });
 });
+
+// Fetch a user by ID
+final userProvider = FutureProvider.family<User?, int>((ref, userId) async {
+  final client = ref.watch(serverpodClientProvider);
+  try {
+    return await client.user.getUser(userId);
+  } catch (e) {
+    return null;
+  }
+});

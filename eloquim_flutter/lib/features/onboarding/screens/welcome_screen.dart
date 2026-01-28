@@ -26,9 +26,14 @@ class WelcomeScreen extends ConsumerWidget {
                     builder: (context, value, child) {
                       return Transform.scale(
                         scale: value,
-                        child: const Text(
-                          '✨💬✨',
-                          style: TextStyle(fontSize: 80),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(24),
+                          child: Image.asset(
+                            'assets/images/eloquim_logo.jpg',
+                            width: 120,
+                            height: 120,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       );
                     },
