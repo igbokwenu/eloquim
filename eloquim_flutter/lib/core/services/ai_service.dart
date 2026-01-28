@@ -9,7 +9,7 @@ class AIService {
   AIService._internal();
 
   final _model = FirebaseAI.googleAI().generativeModel(
-    model: 'gemini-2.5-flash',
+    model: 'gemini-2.5-flash-lite',
     systemInstruction: Content.text('''
       You are Eloquim AI, a sophisticated emoji translation and communication assistant.
       Your primary job is to translate emojis to natural language and vice versa, 

@@ -91,3 +91,35 @@ docker compose up --build --detach
 dart bin/main.dart --apply-migrations
 
 flutter run -d chrome
+
+# Deploy
+scloud deploy
+
+# Build Flutter app test
+serverpod run flutter_build
+
+# Check deployment status
+scloud deployment show
+
+# View logs
+scloud log
+
+scloud log --tail
+
+# Check for build errors
+scloud deployment build-log  
+
+# List all passwords (shows names only, not values)
+scloud password list
+scloud secret list
+
+# View specific build log
+scloud deployment build-log b6a6b90f-a5a9-4415-b65b-269ef13d0158
+
+# View logs since hours past
+scloud log 10m
+scloud log --since 1h
+
+
+# Deploy
+scloud deploy

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:serverpod_flutter/serverpod_flutter.dart';
 import 'package:eloquim_client/eloquim_client.dart';
@@ -9,10 +10,26 @@ late Client globalClient;
 
 /// Initializes the Serverpod client and authentication
 Future<void> initializeServerpodClient() async {
-  const serverUrl = String.fromEnvironment(
-    'SERVER_URL',
-    defaultValue: 'http://127.0.0.1:8080/',
-  );
+  // 1. Define your Production API URL here
+  const productionUrl = 'https://eloquim.api.serverpod.space/';
+
+  // 2. Define your Development API URL here
+  const developmentUrl = 'http://127.0.0.1:8080/';
+
+  // 3. Logic to select the correct URL
+  // Priority:
+  // A. Command line argument (--dart-define=SERVER_URL=...)
+  // B. If Release Mode (Production) -> Use Production URL
+  // C. Default -> Use Development URL
+  String serverUrl = const String.fromEnvironment('SERVER_URL');
+
+  if (serverUrl.isEmpty) {
+    if (kReleaseMode) {
+      serverUrl = productionUrl;
+    } else {
+      serverUrl = developmentUrl;
+    }
+  }
 
   globalClient = Client(serverUrl)
     ..connectivityMonitor = FlutterConnectivityMonitor()
