@@ -144,13 +144,14 @@ Future<void> _sendEmail(
   required String subject,
   required String text,
 }) async {
-  // 1. Get API Key from Secrets (injected as env var)
+  // 1. Get API Key
   final apiKey = Platform.environment['RESEND_API_KEY'];
 
   if (apiKey != null) {
     try {
       final uri = Uri.parse('https://api.resend.com/emails');
 
+      // 2. Perform the request
       final response = await http.post(
         uri,
         headers: {
@@ -158,32 +159,29 @@ Future<void> _sendEmail(
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
-          // Until you verify your domain on Resend, use 'onboarding@resend.dev'
-          // Once verified, use 'eloquim@habilisfusion.co'
+          // IMPORTANT: If you haven't verified 'habilisfusion.co' on Resend yet,
+          // you MUST use 'onboarding@resend.dev' as the 'from' address.
+          // If you HAVE verified it, you can use 'eloquim@habilisfusion.co'
           'from': 'Eloquim <onboarding@resend.dev>',
           'to': [to],
           'subject': subject,
-          'html': '<p>$text</p>', // Simple HTML wrapper
+          'html': '<p>$text</p>',
         }),
       );
 
+      // 3. LOGGING FIX: Use print() instead of session.log()
+      // The session might be closed by the time this line runs.
       if (response.statusCode == 200 || response.statusCode == 201) {
-        session.log('Email sent via Resend to $to');
+        print('✅ EMAIL SUCCESS: Sent to $to');
       } else {
-        session.log(
-          'Failed to send email via Resend: ${response.body}',
-          level: LogLevel.error,
-        );
+        print('❌ EMAIL FAILED: ${response.statusCode} ${response.body}');
       }
     } catch (e) {
-      session.log('Error calling Resend API: $e', level: LogLevel.error);
+      print('❌ EMAIL EXCEPTION: $e');
     }
   } else {
-    // Local Development Fallback (Log to console)
-    session.log('--------------------------------------------------');
-    session.log('EMAIL SIMULATION (No API Key) to: $to');
-    session.log('Subject: $subject');
-    session.log('Content: $text');
-    session.log('--------------------------------------------------');
+    // Local fallback
+    print('⚠️ EMAIL SIMULATION (No API Key) to: $to');
+    print('Content: $text');
   }
 }
