@@ -56,6 +56,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Chat'),
+        // leading: IconButton(
+        //   icon: const Icon(Icons.arrow_back),
+        //   onPressed: () => context.push('/conversations'),
+        // ),
         actions: [
           // Find New Match Button
           TextButton.icon(

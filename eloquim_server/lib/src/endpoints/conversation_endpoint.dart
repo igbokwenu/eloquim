@@ -193,4 +193,27 @@ class ConversationEndpoint extends Endpoint {
       );
     }
   }
+
+  /// Listen for system notifications (e.g. new conversations)
+  Stream<SystemNotification> listenToSystemNotifications(
+    Session session,
+  ) async* {
+    final authInfo = await session.authenticated;
+    if (authInfo == null) return;
+
+    final user = await User.db.findFirstRow(
+      session,
+      where: (t) => t.authUserId.equals(authInfo.authUserId),
+    );
+    if (user == null) return;
+    final userId = user.id!;
+
+    final stream = session.messages.createStream<SystemNotification>(
+      'user_$userId',
+    );
+
+    await for (final notification in stream) {
+      yield notification;
+    }
+  }
 }

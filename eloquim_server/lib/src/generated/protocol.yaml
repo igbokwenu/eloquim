@@ -17,6 +17,7 @@ conversation:
   - getConversation:
   - archiveConversation:
   - deleteConversation:
+  - listenToSystemNotifications:
 persona:
   - getOfficialPersonas:
   - getPersona:

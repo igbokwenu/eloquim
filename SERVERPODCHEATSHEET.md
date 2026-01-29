@@ -124,7 +124,9 @@ scloud log --since 1h
 # Deploy
 scloud deploy
 
-Febugging:
+Debugging:
+
+scloud deploy --verbose
 
 scloud deploy --dry-run --verbose
 

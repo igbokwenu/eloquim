@@ -442,6 +442,19 @@ class Endpoints extends _i1.EndpointDispatch {
                     params['conversationId'],
                   ),
         ),
+        'listenToSystemNotifications': _i1.MethodStreamConnector(
+          name: 'listenToSystemNotifications',
+          params: {},
+          streamParams: {},
+          returnType: _i1.MethodStreamReturnType.streamType,
+          call:
+              (
+                _i1.Session session,
+                Map<String, dynamic> params,
+                Map<String, Stream> streamParams,
+              ) => (endpoints['conversation'] as _i4.ConversationEndpoint)
+                  .listenToSystemNotifications(session),
+        ),
       },
     );
     connectors['persona'] = _i1.EndpointConnector(

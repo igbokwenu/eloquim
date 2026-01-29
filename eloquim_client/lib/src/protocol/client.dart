@@ -19,13 +19,14 @@ import 'package:serverpod_auth_core_client/serverpod_auth_core_client.dart'
 import 'package:eloquim_client/src/protocol/message.dart' as _i5;
 import 'package:eloquim_client/src/protocol/send_message_request.dart' as _i6;
 import 'package:eloquim_client/src/protocol/conversation.dart' as _i7;
-import 'package:eloquim_client/src/protocol/persona.dart' as _i8;
+import 'package:eloquim_client/src/protocol/system_notification.dart' as _i8;
+import 'package:eloquim_client/src/protocol/persona.dart' as _i9;
 import 'package:eloquim_client/src/protocol/recommendation_response.dart'
-    as _i9;
-import 'package:eloquim_client/src/protocol/user.dart' as _i10;
-import 'package:eloquim_client/src/protocol/token_usage_info.dart' as _i11;
-import 'package:eloquim_client/src/protocol/greetings/greeting.dart' as _i12;
-import 'protocol.dart' as _i13;
+    as _i10;
+import 'package:eloquim_client/src/protocol/user.dart' as _i11;
+import 'package:eloquim_client/src/protocol/token_usage_info.dart' as _i12;
+import 'package:eloquim_client/src/protocol/greetings/greeting.dart' as _i13;
+import 'protocol.dart' as _i14;
 
 /// {@category Endpoint}
 class EndpointEmailIdp extends _i1.EndpointEmailIdpBase {
@@ -304,6 +305,18 @@ class EndpointConversation extends _i2.EndpointRef {
         'deleteConversation',
         {'conversationId': conversationId},
       );
+
+  /// Listen for system notifications (e.g. new conversations)
+  _i3.Stream<_i8.SystemNotification> listenToSystemNotifications() =>
+      caller.callStreamingServerEndpoint<
+        _i3.Stream<_i8.SystemNotification>,
+        _i8.SystemNotification
+      >(
+        'conversation',
+        'listenToSystemNotifications',
+        {},
+        {},
+      );
 }
 
 /// {@category Endpoint}
@@ -313,15 +326,15 @@ class EndpointPersona extends _i2.EndpointRef {
   @override
   String get name => 'persona';
 
-  _i3.Future<List<_i8.Persona>> getOfficialPersonas() =>
-      caller.callServerEndpoint<List<_i8.Persona>>(
+  _i3.Future<List<_i9.Persona>> getOfficialPersonas() =>
+      caller.callServerEndpoint<List<_i9.Persona>>(
         'persona',
         'getOfficialPersonas',
         {},
       );
 
-  _i3.Future<_i8.Persona?> getPersona(int personaId) =>
-      caller.callServerEndpoint<_i8.Persona?>(
+  _i3.Future<_i9.Persona?> getPersona(int personaId) =>
+      caller.callServerEndpoint<_i9.Persona?>(
         'persona',
         'getPersona',
         {'personaId': personaId},
@@ -348,12 +361,12 @@ class EndpointRecommendation extends _i2.EndpointRef {
   @override
   String get name => 'recommendation';
 
-  _i3.Future<_i9.RecommendationResponse> getRecommendations(
+  _i3.Future<_i10.RecommendationResponse> getRecommendations(
     int conversationId,
     String partialText,
     String tone,
     String personaId,
-  ) => caller.callServerEndpoint<_i9.RecommendationResponse>(
+  ) => caller.callServerEndpoint<_i10.RecommendationResponse>(
     'recommendation',
     'getRecommendations',
     {
@@ -408,19 +421,19 @@ class EndpointUser extends _i2.EndpointRef {
   @override
   String get name => 'user';
 
-  _i3.Future<_i10.User?> getCurrentUser() =>
-      caller.callServerEndpoint<_i10.User?>(
+  _i3.Future<_i11.User?> getCurrentUser() =>
+      caller.callServerEndpoint<_i11.User?>(
         'user',
         'getCurrentUser',
         {},
       );
 
-  _i3.Future<_i10.User> updateProfile({
+  _i3.Future<_i11.User> updateProfile({
     String? username,
     String? gender,
     int? age,
     String? country,
-  }) => caller.callServerEndpoint<_i10.User>(
+  }) => caller.callServerEndpoint<_i11.User>(
     'user',
     'updateProfile',
     {
@@ -437,8 +450,8 @@ class EndpointUser extends _i2.EndpointRef {
     {},
   );
 
-  _i3.Future<_i10.User?> getUser(int userId) =>
-      caller.callServerEndpoint<_i10.User?>(
+  _i3.Future<_i11.User?> getUser(int userId) =>
+      caller.callServerEndpoint<_i11.User?>(
         'user',
         'getUser',
         {'userId': userId},
@@ -450,12 +463,12 @@ class EndpointUser extends _i2.EndpointRef {
     {},
   );
 
-  _i3.Future<List<_i10.User>> findMatches({
+  _i3.Future<List<_i11.User>> findMatches({
     int? minAge,
     int? maxAge,
     String? country,
     required int limit,
-  }) => caller.callServerEndpoint<List<_i10.User>>(
+  }) => caller.callServerEndpoint<List<_i11.User>>(
     'user',
     'findMatches',
     {
@@ -496,8 +509,8 @@ class EndpointUser extends _i2.EndpointRef {
   );
 
   /// Gets token usage info for the current user
-  _i3.Future<_i11.TokenUsageInfo> getTokenUsageInfo() =>
-      caller.callServerEndpoint<_i11.TokenUsageInfo>(
+  _i3.Future<_i12.TokenUsageInfo> getTokenUsageInfo() =>
+      caller.callServerEndpoint<_i12.TokenUsageInfo>(
         'user',
         'getTokenUsageInfo',
         {},
@@ -514,8 +527,8 @@ class EndpointGreeting extends _i2.EndpointRef {
   String get name => 'greeting';
 
   /// Returns a personalized greeting message: "Hello {name}".
-  _i3.Future<_i12.Greeting> hello(String name) =>
-      caller.callServerEndpoint<_i12.Greeting>(
+  _i3.Future<_i13.Greeting> hello(String name) =>
+      caller.callServerEndpoint<_i13.Greeting>(
         'greeting',
         'hello',
         {'name': name},
@@ -553,7 +566,7 @@ class Client extends _i2.ServerpodClientShared {
     bool? disconnectStreamsOnLostInternetConnection,
   }) : super(
          host,
-         _i13.Protocol(),
+         _i14.Protocol(),
          securityContext: securityContext,
          streamingConnectionTimeout: streamingConnectionTimeout,
          connectionTimeout: connectionTimeout,

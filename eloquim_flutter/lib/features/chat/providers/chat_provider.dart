@@ -50,15 +50,13 @@ class ConversationIdNotifier extends Notifier<int?> {
 
 // Chat notifier
 class ChatNotifier extends AsyncNotifier<ChatState> {
-  late final Client _client;
   int? _conversationId;
   StreamSubscription? _messageSubscription;
   final _aiService = AIService();
 
   @override
   Future<ChatState> build() async {
-    _client = ref.read(serverpodClientProvider);
-    // Use watch to rebuild when ID changes
+    final client = ref.read(serverpodClientProvider);
     _conversationId = ref.watch(currentConversationIdProvider);
 
     if (_conversationId == null) {
@@ -66,25 +64,20 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
     }
 
     try {
-      // Show loading indicator
-      state = const AsyncLoading();
-
-      // Load initial messages
-      final messages = await _client.chat.getMessages(
+      final messages = await client.chat.getMessages(
         _conversationId!,
-        limit: 50, // Increased limit for better history
+        limit: 50,
       );
 
-      // Subscribe to real-time updates
       _subscribeToMessages();
 
-      // Cleanup on dispose
       ref.onDispose(() {
         _messageSubscription?.cancel();
       });
 
       return ChatState(messages: messages);
     } catch (e) {
+      debugPrint('Error loading chat history: $e');
       return ChatState(error: e.toString());
     }
   }
@@ -102,28 +95,21 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
 
     if (user == null) return;
 
-    // Call AI translation service on client
-    final translation = await _aiService.translateEmojis(
-      emojiSequence: emojiOverride ?? [],
-      tone: currentState.currentTone,
-      sender: user,
-      context: currentState.messages,
-    );
-
-    // Optimistic UI update
+    // 1. Optimistic message placeholder
     final tempMessage = Message(
       id: -DateTime.now().millisecondsSinceEpoch,
       conversationId: _conversationId!,
       senderId: user.id!,
       rawIntent: rawIntent,
       emojiSequence: emojiOverride ?? [],
-      translatedText: translation['text'] ?? rawIntent,
+      translatedText: '...', // Placeholder
       tone: currentState.currentTone,
       personaUsed: user.personaId?.toString() ?? 'default',
-      confidenceScore: (translation['confidence'] as num?)?.toDouble() ?? 0.0,
+      confidenceScore: 0.0,
       createdAt: DateTime.now(),
     );
 
+    // Show "Creating Soul Packet" immediately
     state = AsyncData(
       currentState.copyWith(
         messages: [...currentState.messages, tempMessage],
@@ -132,7 +118,18 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
     );
 
     try {
-      final sentMessage = await _client.chat.sendMessage(
+      // 2. Call AI translation service
+      final translation = await _aiService.translateEmojis(
+        emojiSequence: emojiOverride ?? [],
+        tone: currentState.currentTone,
+        sender: user,
+        context: currentState.messages,
+      );
+
+      final client = ref.read(serverpodClientProvider);
+
+      // 3. Send to server
+      final sentMessage = await client.chat.sendMessage(
         SendMessageRequest(
           conversationId: _conversationId!,
           rawIntent: rawIntent,
@@ -151,7 +148,7 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
       if (translation['totalTokens'] != null &&
           translation['totalTokens'] > 0) {
         unawaited(
-          _client.user.logTokenUsage(
+          client.user.logTokenUsage(
             userId: user.id!,
             tokenCount: translation['totalTokens'],
             apiCallType: 'translation',
@@ -159,27 +156,30 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
         );
       }
 
-      // Replace temp message with server response
+      // 4. Update state with real message
+      final latestState = state.asData?.value ?? currentState;
       final updatedMessages =
-          currentState.messages.where((m) => m.id != tempMessage.id).toList()
+          latestState.messages.where((m) => m.id != tempMessage.id).toList()
             ..add(sentMessage);
 
       state = AsyncData(
-        currentState.copyWith(
+        latestState.copyWith(
           messages: updatedMessages,
           isTyping: false,
         ),
       );
 
-      // Trigger bot reply if the recipient is a bot
+      // 5. Trigger bot reply if the recipient is a bot
       _triggerBotReplyIfNecessary(sentMessage, user);
     } catch (e) {
-      final updatedMessages = currentState.messages
+      debugPrint('Error sending message: $e');
+      final latestState = state.asData?.value ?? currentState;
+      final updatedMessages = latestState.messages
           .where((m) => m.id != tempMessage.id)
           .toList();
 
       state = AsyncData(
-        currentState.copyWith(
+        latestState.copyWith(
           messages: updatedMessages,
           isTyping: false,
           error: e.toString(),
@@ -192,11 +192,13 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
   void _subscribeToMessages() {
     if (_conversationId == null) return;
 
+    final client = ref.read(serverpodClientProvider);
+
     // Ensure connection is open
-    unawaited(_client.openStreamingConnection());
+    unawaited(client.openStreamingConnection());
 
     _messageSubscription?.cancel();
-    _messageSubscription = _client.chat
+    _messageSubscription = client.chat
         .streamChat(_conversationId!)
         .listen(
           (message) async {
@@ -230,9 +232,11 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
   ) async {
     if (_conversationId == null) return;
 
+    final client = ref.read(serverpodClientProvider);
+
     try {
       // Fetch conversation to get participant list
-      final conversation = await _client.conversation.getConversation(
+      final conversation = await client.conversation.getConversation(
         _conversationId!,
       );
       if (conversation == null) return;
@@ -244,7 +248,7 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
       );
 
       if (otherId != -1) {
-        final otherUser = await _client.user.getUser(otherId);
+        final otherUser = await client.user.getUser(otherId);
         if (otherUser != null && otherUser.isBot) {
           await triggerBotResponse(otherUser);
         }
@@ -261,31 +265,33 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
     final currentUser = userAsync.asData?.value;
     if (currentUser == null) return;
 
+    final client = ref.read(serverpodClientProvider);
+
     state = AsyncData(currentState.copyWith(isTyping: true));
 
-    final (botReply, tokens) = await _aiService.generateBotResponse(
-      botUser: botUser,
-      history: currentState.messages,
-      currentUser: currentUser,
-      onToolCall: (name, args) async {
-        switch (name) {
-          case 'getTutorialStatus':
-            return {'hasDoneTutorial': currentUser.hasDoneTutorial};
-          case 'markTutorialFinished':
-            await _client.user.completeTutorial();
-            return {'success': true};
-          case 'navigateToFindMatch':
-            ref.read(botActionProvider.notifier).set('navigateToFindMatch');
-            return {'navigated': true};
-          default:
-            return {'error': 'Unknown tool'};
-        }
-      },
-    );
+    try {
+      final (botReply, tokens) = await _aiService.generateBotResponse(
+        botUser: botUser,
+        history: currentState.messages,
+        currentUser: currentUser,
+        onToolCall: (name, args) async {
+          switch (name) {
+            case 'getTutorialStatus':
+              return {'hasDoneTutorial': currentUser.hasDoneTutorial};
+            case 'markTutorialFinished':
+              await client.user.completeTutorial();
+              return {'success': true};
+            case 'navigateToFindMatch':
+              ref.read(botActionProvider.notifier).set('navigateToFindMatch');
+              return {'navigated': true};
+            default:
+              return {'error': 'Unknown tool'};
+          }
+        },
+      );
 
-    if (botReply != null) {
-      try {
-        await _client.chat.sendMessage(
+      if (botReply != null) {
+        final sentMessage = await client.chat.sendMessage(
           SendMessageRequest(
             conversationId: _conversationId!,
             rawIntent: botReply.translatedText,
@@ -300,19 +306,21 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
 
         if (tokens > 0) {
           unawaited(
-            _client.user.logTokenUsage(
+            client.user.logTokenUsage(
               userId: currentUser.id!,
               tokenCount: tokens,
               apiCallType: 'bot_response',
             ),
           );
         }
-      } catch (e) {
-        debugPrint('Error sending bot reply: $e');
       }
+    } catch (e) {
+      debugPrint('Error in bot response: $e');
+    } finally {
+      // Use current state to preserve messages
+      final latestState = state.asData?.value ?? currentState;
+      state = AsyncData(latestState.copyWith(isTyping: false));
     }
-
-    state = AsyncData(state.asData!.value.copyWith(isTyping: false));
   }
 
   /// Switch tone (for tone-morphing preview)
@@ -325,8 +333,10 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
   Future<void> markAsRead(int messageId) async {
     if (_conversationId == null) return;
 
+    final client = ref.read(serverpodClientProvider);
+
     try {
-      await _client.chat.markAsRead(_conversationId!, messageId);
+      await client.chat.markAsRead(_conversationId!, messageId);
     } catch (e) {
       // Silent fail
     }
@@ -336,8 +346,10 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
   Future<void> refresh() async {
     if (_conversationId == null) return;
 
+    final client = ref.read(serverpodClientProvider);
+
     try {
-      final messages = await _client.chat.getMessages(
+      final messages = await client.chat.getMessages(
         _conversationId!,
         limit: 20,
       );
