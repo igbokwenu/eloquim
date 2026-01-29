@@ -17,10 +17,14 @@ class MatchNotifier extends AsyncNotifier<User?> {
 
     try {
       final client = ref.read(serverpodClientProvider);
+      final userAsync = ref.read(currentUserProvider);
+      final currentUserId = userAsync.asData?.value?.id;
 
-      _matches = await client.user.findMatches(
-        limit: 10,
+      final allMatches = await client.user.findMatches(
+        limit: 15, // Fetch a few more to account for filtering
       );
+
+      _matches = allMatches.where((u) => u.id != currentUserId).toList();
 
       _currentIndex = 0;
 

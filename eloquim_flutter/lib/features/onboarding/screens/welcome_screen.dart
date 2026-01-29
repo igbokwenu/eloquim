@@ -72,25 +72,7 @@ class WelcomeScreen extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: TextButton(
-                      onPressed: () {
-                        // TODO: Implement guest mode - skip auth and go to quiz
-                        context.go('/quiz');
-                      },
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 16,
-                        ),
-                      ),
-                      child: const Text(
-                        'Continue as Guest',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ),
-                  ),
+            
                 ],
               ),
             ),

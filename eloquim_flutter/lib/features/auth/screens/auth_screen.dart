@@ -1,6 +1,7 @@
 // eloquim_flutter/lib/features/auth/screens/auth_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
 import '../../../core/providers/serverpod_client_provider.dart';
 
@@ -90,16 +91,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       client: client,
                       startScreen: EmailFlowScreen.login,
                       onTermsAndConditionsPressed: () {
-                        // TODO: Show Terms and Conditions
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Terms and Conditions')),
-                        );
+                        context.push('/terms');
                       },
                       onPrivacyPolicyPressed: () {
-                        // TODO: Show Privacy Policy
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Privacy Policy')),
-                        );
+                        context.push('/privacy');
                       },
                       onAuthenticated: () {
                         // After authentication, proceed to quiz

@@ -61,88 +61,93 @@ class _QuizResultScreenState extends ConsumerState<QuizResultScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Persona emoji
-              Text(
-                personaInfo['emoji'] as String,
-                style: const TextStyle(fontSize: 100),
-              ),
-              const SizedBox(height: 32),
-
-              // Title
-              const Text(
-                'Your Persona',
-                style: TextStyle(
-                  fontSize: 24,
-                  color: Colors.grey,
-                ),
-              ),
-              const SizedBox(height: 8),
-
-              // Persona name
-              Text(
-                widget.assignedPersona,
-                style: const TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Description
-              Text(
-                personaInfo['description'] as String,
-                style: const TextStyle(fontSize: 16),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-
-              // Emoji signature
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      const Text(
-                        'Your Emoji Signature',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        personaInfo['signature'] as String,
-                        style: const TextStyle(fontSize: 36),
-                      ),
-                    ],
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Persona emoji
+                  Text(
+                    personaInfo['emoji'] as String,
+                    style: const TextStyle(fontSize: 100),
                   ),
-                ),
-              ),
-              const Spacer(),
+                  const SizedBox(height: 32),
 
-              // Continue button
-              if (!_isLoading)
-                FilledButton(
-                  onPressed: () => context.go('/tutorial'),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 48,
-                      vertical: 16,
+                  // Title
+                  const Text(
+                    'Your Persona',
+                    style: TextStyle(
+                      fontSize: 24,
+                      color: Colors.grey,
                     ),
                   ),
-                  child: const Text(
-                    'Continue to Tutorial',
-                    style: TextStyle(fontSize: 18),
+                  const SizedBox(height: 8),
+
+                  // Persona name
+                  Text(
+                    widget.assignedPersona,
+                    style: const TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                )
-              else
-                const CircularProgressIndicator(),
-            ],
+                  const SizedBox(height: 16),
+
+                  // Description
+                  Text(
+                    personaInfo['description'] as String,
+                    style: const TextStyle(fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Emoji signature
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          const Text(
+                            'Your Emoji Signature',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            personaInfo['signature'] as String,
+                            style: const TextStyle(fontSize: 36),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 48),
+
+                  // Continue button
+                  if (!_isLoading)
+                    FilledButton(
+                      onPressed: () => context.go('/tutorial'),
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 48,
+                          vertical: 16,
+                        ),
+                      ),
+                      child: const Text(
+                        'Continue to Tutorial',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    )
+                  else
+                    const CircularProgressIndicator(),
+                ],
+              ),
+            ),
           ),
         ),
       ),

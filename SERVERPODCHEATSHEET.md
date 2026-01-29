@@ -93,7 +93,7 @@ dart bin/main.dart --apply-migrations
 flutter run -d chrome
 
 # Deploy
-scloud deploy
+scloud deploy --verbose
 
 # Build Flutter app test
 serverpod run flutter_build

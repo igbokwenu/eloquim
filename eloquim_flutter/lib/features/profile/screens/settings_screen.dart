@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:serverpod_auth_idp_flutter/serverpod_auth_idp_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/providers/serverpod_client_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -87,20 +88,30 @@ class SettingsScreen extends ConsumerWidget {
             },
           ),
 
-          ListTile(
-            leading: const Icon(Icons.help),
-            title: const Text('Help & FAQ'),
-            onTap: () {
-              // TODO: Navigate to help
-            },
-          ),
 
           ListTile(
             leading: const Icon(Icons.feedback),
             title: const Text('Send Feedback'),
             onTap: () {
-              // TODO: Show feedback dialog
+              final Uri emailLaunchUri = Uri(
+                scheme: 'mailto',
+                path: 'eloquim@habilisfusion.co',
+                query: 'subject=Eloquim Feedback',
+              );
+              launchUrl(emailLaunchUri);
             },
+          ),
+
+          ListTile(
+            leading: const Icon(Icons.privacy_tip),
+            title: const Text('Privacy Policy'),
+            onTap: () => context.push('/privacy'),
+          ),
+
+          ListTile(
+            leading: const Icon(Icons.description),
+            title: const Text('Terms of Service'),
+            onTap: () => context.push('/terms'),
           ),
 
           const Divider(height: 32),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/providers/serverpod_client_provider.dart';
+import '../../../shared/constants/tone_constants.dart';
 
 class TutorialScreen extends ConsumerStatefulWidget {
   const TutorialScreen({super.key});
@@ -13,6 +14,8 @@ class TutorialScreen extends ConsumerStatefulWidget {
 
 class _TutorialScreenState extends ConsumerState<TutorialScreen> {
   int _currentStep = 0;
+  String _activeTone = 'casual';
+
   final List<TutorialStep> _steps = [
     TutorialStep(
       title: 'Meet Adanna 👋',
@@ -23,12 +26,27 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
       instruction: 'This is how emojis translate to text',
     ),
     TutorialStep(
-      title: 'Choose Your Tone 🎨',
+      title: 'Tone Morphing 🎨',
       description:
-          'The same emojis can mean different things based on your tone.',
-      demoEmoji: '🔥',
-      demoText: 'That\'s fire!',
-      instruction: 'Swipe the tone selector to see how it changes',
+          'The same emojis mean different things depending on your tone. Try switching tones below!',
+      demoEmoji: '👋',
+      demoText: 'Hey there!',
+      instruction: 'Tap a tone to see how the translation shifts',
+      multiToneDemo: {
+        'casual': 'Hey there! How\'s it going?',
+        'flirty': 'Hey cutie, how\'s your day going? 😉',
+        'formal': 'Good day. I hope this message finds you well.',
+        'enthusiastic': 'HIIII! SO HAPPY TO CONNECT WITH YOU!! 🎉',
+        'cold': 'Hello.',
+      },
+    ),
+    TutorialStep(
+      title: 'Quick Responses ✨',
+      description:
+          'AI suggests emojis you can use to reply instantly. Just tap them to send!',
+      demoEmoji: '🙏✨',
+      demoText: 'Thank you so much!',
+      instruction: 'Look for suggested emojis above the keyboard',
     ),
     TutorialStep(
       title: 'Ghost Translation 👻',
@@ -57,9 +75,7 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
       await client.user.completeTutorial();
 
       if (mounted) {
-        // Invalidate current user to refresh their state (hasDoneTutorial = true)
         ref.invalidate(currentUserProvider);
-        // Wait for the next value from the stream to ensure it's updated
         await ref.read(currentUserProvider.future);
         context.go('/conversations');
       }
@@ -92,18 +108,14 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Progress indicator
               LinearProgressIndicator(
                 value: (_currentStep + 1) / _steps.length,
               ),
               const SizedBox(height: 32),
-
-              // Step content
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Title
                     Text(
                       step.title,
                       style: const TextStyle(
@@ -113,18 +125,14 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
-
-                    // Description
                     Text(
                       step.description,
                       style: const TextStyle(fontSize: 16),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 48),
-
-                    // Demo message bubble
                     GestureDetector(
-                      onLongPress: _currentStep == 2
+                      onLongPress: _currentStep == 3
                           ? () {
                               showDialog(
                                 context: context,
@@ -139,12 +147,16 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
                                       const SizedBox(height: 8),
                                       _buildDetailRow(
                                         'Translated',
-                                        step.demoText,
+                                        step.multiToneDemo?[_activeTone] ??
+                                            step.demoText,
                                       ),
                                       const SizedBox(height: 8),
-                                      _buildDetailRow('Tone', 'Casual'),
+                                      _buildDetailRow(
+                                        'Tone',
+                                        'enthusiastic',
+                                      ),
                                       const SizedBox(height: 8),
-                                      _buildDetailRow('Confidence', '92%'),
+                                      _buildDetailRow('Confidence', '98%'),
                                     ],
                                   ),
                                   actions: [
@@ -180,10 +192,11 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              step.demoText,
+                              step.multiToneDemo?[_activeTone] ?? step.demoText,
                               style: const TextStyle(
                                 fontSize: 18,
                                 color: Colors.black,
+                                fontWeight: FontWeight.w500,
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -192,8 +205,10 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-
-                    // Instruction
+                    if (step.multiToneDemo != null) ...[
+                      _buildToneSelector(),
+                      const SizedBox(height: 24),
+                    ],
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -219,8 +234,6 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
                   ],
                 ),
               ),
-
-              // Next button
               FilledButton(
                 onPressed: _nextStep,
                 style: FilledButton.styleFrom(
@@ -251,8 +264,39 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
             ),
           ),
         ),
-        Expanded(child: Text(value)),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(fontStyle: FontStyle.italic),
+          ),
+        ),
       ],
+    );
+  }
+
+  Widget _buildToneSelector() {
+    return SizedBox(
+      height: 50,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: ToneConstants.tones.length,
+        itemBuilder: (context, index) {
+          final tone = ToneConstants.tones[index];
+          final isSelected = tone == _activeTone;
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: ChoiceChip(
+              label: Text('${ToneConstants.toneEmojis[tone] ?? ''} $tone'),
+              selected: isSelected,
+              onSelected: (selected) {
+                if (selected) {
+                  setState(() => _activeTone = tone);
+                }
+              },
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -263,6 +307,7 @@ class TutorialStep {
   final String demoEmoji;
   final String demoText;
   final String instruction;
+  final Map<String, String>? multiToneDemo;
 
   const TutorialStep({
     required this.title,
@@ -270,5 +315,6 @@ class TutorialStep {
     required this.demoEmoji,
     required this.demoText,
     required this.instruction,
+    this.multiToneDemo,
   });
 }

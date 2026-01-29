@@ -158,13 +158,20 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
 
       // 4. Update state with real message
       final latestState = state.asData?.value ?? currentState;
-      final updatedMessages =
-          latestState.messages.where((m) => m.id != tempMessage.id).toList()
-            ..add(sentMessage);
+
+      // Remove the temp message
+      final List<Message> filteredMessages = latestState.messages
+          .where((m) => m.id != tempMessage.id)
+          .toList();
+
+      // Only add sentMessage if it hasn't already been added by the stream
+      if (!filteredMessages.any((m) => m.id == sentMessage.id)) {
+        filteredMessages.add(sentMessage);
+      }
 
       state = AsyncData(
         latestState.copyWith(
-          messages: updatedMessages,
+          messages: filteredMessages,
           isTyping: false,
         ),
       );
@@ -291,7 +298,7 @@ class ChatNotifier extends AsyncNotifier<ChatState> {
       );
 
       if (botReply != null) {
-        final sentMessage = await client.chat.sendMessage(
+        await client.chat.sendMessage(
           SendMessageRequest(
             conversationId: _conversationId!,
             rawIntent: botReply.translatedText,

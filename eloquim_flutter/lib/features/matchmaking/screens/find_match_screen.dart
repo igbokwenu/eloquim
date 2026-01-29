@@ -136,7 +136,7 @@ class _FindMatchScreenState extends ConsumerState<FindMatchScreen> {
                             // Emoji signature
                             Text(
                               currentMatch.emojiSignature,
-                              style: const TextStyle(fontSize: 80),
+                              style: const TextStyle(fontSize: 40),
                             ),
                             const SizedBox(height: 18),
 
