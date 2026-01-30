@@ -805,7 +805,7 @@ packages:
     source: hosted
     version: "4.9.0"
   json_schema_builder:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: json_schema_builder
       sha256: "65035d48d028401ad0ffc8c2f173209c7b1441e465a942a0f909070fae33170c"
@@ -845,7 +845,7 @@ packages:
     source: hosted
     version: "6.0.0"
   logging:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: logging
       sha256: c8245ada5f1717ed44271ed1c26b8ce85ca3228fd2ffdb75468ab01979309d61

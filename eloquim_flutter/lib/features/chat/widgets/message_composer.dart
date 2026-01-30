@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:eloquim_client/eloquim_client.dart';
 import '../../../core/providers/serverpod_client_provider.dart';
 import '../../../shared/constants/tone_constants.dart';
+import 'genui_catalog.dart';
 
 class MessageComposer extends ConsumerStatefulWidget {
   final Function(String text, List<String>? emojis) onSend;
@@ -102,6 +103,24 @@ class _MessageComposerState extends ConsumerState<MessageComposer> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    // Register GenUI interaction hook
+    globalOnEmojiSelected = (emoji) {
+      if (mounted) _addEmoji(emoji);
+    };
+  }
+
+  @override
+  void dispose() {
+    // Clean up hook
+    if (globalOnEmojiSelected != null) {
+      globalOnEmojiSelected = null;
+    }
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Find last message from the partner for recommendations
     final currentUserAsync = ref.watch(currentUserProvider);
@@ -115,14 +134,10 @@ class _MessageComposerState extends ConsumerState<MessageComposer> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
+        color: Colors.white.withOpacity(
+          0.05,
+        ), // More transparent for Atmosphere
+        border: const Border(top: BorderSide(color: Colors.white12)),
       ),
       child: SafeArea(
         child: Column(
@@ -131,9 +146,9 @@ class _MessageComposerState extends ConsumerState<MessageComposer> {
             // Tone Selector at the top
             _buildToneSelector(),
 
-            const Divider(height: 1),
+            const Divider(height: 1, color: Colors.white10),
 
-            // Recommended Emojis (Quick Responses)
+            // Original Recommended Emojis (Clickable Logic)
             if (recommendedEmojis.isNotEmpty) ...[
               const Padding(
                 padding: EdgeInsets.only(top: 8.0),
@@ -141,7 +156,7 @@ class _MessageComposerState extends ConsumerState<MessageComposer> {
                   '✨ Suggested Quick Responses',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.blue,
+                    color: Colors.blueAccent,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

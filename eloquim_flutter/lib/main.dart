@@ -3,6 +3,8 @@ import 'package:eloquim_flutter/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:genui/genui.dart';
+import 'package:logging/logging.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 
@@ -14,7 +16,12 @@ void main() async {
   await initializeServerpodClient();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
-);
+  );
+
+  configureGenUiLogging(level: Level.ALL);
+  Logger.root.onRecord.listen((record) {
+    print('${record.loggerName}: ${record.message}');
+  });
 
   runApp(
     const ProviderScope(

@@ -20,7 +20,7 @@ class ConversationListScreen extends ConsumerWidget {
           children: [
             const Text('Eloquim'),
             const Text(
-              'v0.0.5',
+              'v0.0.7',
               style: TextStyle(
                 fontSize: 10,
                 color: Colors.grey,
