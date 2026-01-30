@@ -9,6 +9,6 @@ Eloquim transforms emoji into expressive, personality-driven communication throu
 You can try it out here:
 https://eloquim.serverpod.space/app
 
-## 🎥 Demo Video
+## 🎥 Demo Video (Click Thumbnail Below to Watch on YouTube)
 
 [![Eloquim Demo Video](https://img.youtube.com/vi/QHGXXe55PEs/0.jpg)](https://youtu.be/QHGXXe55PEs)
