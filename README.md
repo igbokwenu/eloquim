@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="eloquim/eloquim_flutter/assets/images/eloquim_logo.jpg" alt="Eloquim Logo" width="200">
+  <img src="eloquim_flutter/assets/images/eloquim_logo.jpg" alt="Eloquim Logo" width="200">
 </p>
 
 ## About
